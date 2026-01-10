@@ -42,9 +42,15 @@ async def main():
     # Initialize (loads existing or creates placeholder)
     await rag.initialize()
     
-    # Ingest the crawled data
-    await rag.rebuild_vector_store()
-    print("\n✅ Database population complete!")
+    try:
+        # Ingest the crawled data
+        await rag.rebuild_vector_store()
+        print("\n✅ Database population complete!")
+        print(f"   Generated index file at: {os.path.abspath(os.path.join(rag.vector_db_path, 'index.faiss'))}")
+    except Exception as e:
+        print("\n❌ PHASE 2 FAILED: Could not build vector database.")
+        print(f"Error details: {e}")
+        print("The chatbot will not work until this is fixed.")
 
 if __name__ == "__main__":
     asyncio.run(main())

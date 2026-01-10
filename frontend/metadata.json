@@ -1,0 +1,7 @@
+{
+  "name": "Music-Assist",
+  "description": "An LLM-powered assistant for LDS music theory, hymn context, and choir leadership, grounded in official Church resources.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
