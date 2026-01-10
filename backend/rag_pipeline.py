@@ -62,15 +62,18 @@ class RAGPipeline:
         try:
             # Try to load existing vector store - check for actual index file
             index_file = os.path.join(self.vector_db_path, "index.faiss")
+            abs_path = os.path.abspath(index_file)
+            
             if os.path.exists(index_file):
                 self.vector_store = FAISS.load_local(
                     self.vector_db_path,
                     self.embeddings,
                     allow_dangerous_deserialization=True
                 )
-                print(f"✓ Loaded existing vector store from {self.vector_db_path}")
+                print(f"✓ Loaded existing vector store from {abs_path}")
             else:
-                print("! No existing vector store found. Please run crawler first.")
+                print(f"! No existing vector store found at: {abs_path}")
+                print("! Please run 'python populate_db.py' and ensure Phase 2 completes successfully.")
                 # Create empty vector store as fallback
                 try:
                     self.vector_store = FAISS.from_texts(
@@ -80,7 +83,7 @@ class RAGPipeline:
                     )
                 except Exception as e:
                     print(f"⚠ Could not create placeholder vector store: {e}")
-                    print("  Server will start in limited mode until crawler is run")
+                    print("  Server will start in limited mode (IN-MEMORY ONLY) until crawler is run")
                     self.vector_store = None
                 
             # Initialize QA chain (if vector store available)
@@ -142,6 +145,10 @@ Helpful Answer (be clear, accurate, and beginner-friendly):"""
         Process a user query through the RAG pipeline
         """
         try:
+            # Auto-recovery: If chain is missing, try to load it again (maybe DB was just built)
+            if self.qa_chain is None:
+                await self.initialize()
+
             if self.qa_chain is None:
                 return {
                     "answer": "Vector store not initialized. Please run the crawler first to populate the knowledge base.",
@@ -208,7 +215,9 @@ Helpful Answer (be clear, accurate, and beginner-friendly):"""
             # Save vector store
             self.vector_store.save_local(self.vector_db_path)
             
+            abs_path = os.path.abspath(self.vector_db_path)
             print(f"✓ Added {len(documents)} documents ({len(splits)} chunks)")
+            print(f"✓ Saved vector store to: {abs_path}")
             
             # Reinitialize QA chain with updated vector store
             self._initialize_qa_chain()
