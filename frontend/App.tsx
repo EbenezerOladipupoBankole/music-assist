@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender } from './types.ts';
-import { gemini } from './services/geminiService.ts';
+import { musicAssistApi } from './services/apiService.ts';
 import { APP_NAME, SUGGESTED_PROMPTS, COLORS, REFERENCE_LINKS } from './constants.ts';
 import ChatMessage from './components/ChatMessage.tsx';
 import ChatInput from './components/ChatInput.tsx';
@@ -37,8 +37,8 @@ const App: React.FC = () => {
     setStatusText('Reviewing handbook...');
 
     try {
-      // Consultation with the real Gemini Music Specialist
-      const response = await gemini.sendMessage(text, messages);
+      // Consultation with the Music-Assist RAG backend
+      const response = await musicAssistApi.sendMessage(text, messages);
 
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -119,16 +119,16 @@ const App: React.FC = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
              </button>
              <div className="flex flex-col">
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight font-serif">Music Specialist Consult</h2>
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight font-serif">Music Assists</h2>
                 <span className="text-[10px] text-teal-600 font-bold uppercase tracking-widest flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
-                  Handbook Session
+                  Your music friend
                 </span>
              </div>
           </div>
           <div className="flex items-center gap-4">
              <button onClick={() => setMessages([])} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-red-700 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-full transition-all shadow-sm">
-               Reset Archives
+               Log in
              </button>
           </div>
         </header>
