@@ -17,33 +17,32 @@ export class MusicAssistService {
         content: m.text
       }));
 
-      // In a real scenario, we'd fetch from the actual endpoint:
-      /*
+      // Send the query to the backend chat endpoint
       const response = await fetch(BACKEND_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt, history: chatHistory })
+        body: JSON.stringify({ message: prompt, conversation_id: null })
       });
-      
-      if (!response.ok) throw new Error("Backend connection failed");
-      return await response.json();
-      */
 
-      // FOR DEMONSTRATION: Simulating a successful RAG response from the backend
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            text: `Based on Chapter 19 of the General Handbook, choir members should be invited to participate and no auditions should be held for ward choirs. \n\nRegarding conducting 'The Spirit of God', it is typically conducted in a standard 4/4 pattern with a vigorous, joyful tempo.`,
-            sources: [
-              { title: "General Handbook 19.3.1", url: "https://www.churchofjesuschrist.org/study/manual/general-handbook/19-music" },
-              { title: "Hymn 2: The Spirit of God", url: "https://www.churchofjesuschrist.org/media/music/songs/the-spirit-of-god" }
-            ]
-          });
-        }, 1500);
-      });
+      if (!response.ok) {
+        const body = await response.text().catch(() => "");
+        throw new Error(`Backend error: ${response.status} ${body}`);
+      }
+
+      const data = await response.json();
+
+      // Map backend ChatResponse to the frontend shape
+      return {
+        text: data.response,
+        sources: data.sources || []
+      };
     } catch (error) {
       console.error("Music-Assist API Error:", error);
-      throw error;
+      // Return a friendly fallback message for the UI when backend is unavailable
+      return {
+        text: "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.",
+        sources: []
+      };
     }
   }
 }
