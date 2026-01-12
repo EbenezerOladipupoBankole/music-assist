@@ -5,6 +5,7 @@ import { musicAssistApi } from './services/apiService.ts';
 import { APP_NAME, SUGGESTED_PROMPTS, COLORS, REFERENCE_LINKS } from './constants.ts';
 import ChatMessage from './components/ChatMessage.tsx';
 import ChatInput from './components/ChatInput.tsx';
+import LoginModal from './components/LoginModal.tsx';
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,6 +13,8 @@ const App: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [statusText, setStatusText] = useState('System Standby');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<string | null>(null);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -127,9 +130,18 @@ const App: React.FC = () => {
              </div>
           </div>
           <div className="flex items-center gap-4">
-             <button onClick={() => setMessages([])} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-red-700 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-full transition-all shadow-sm">
-               Log in
-             </button>
+             {user ? (
+               <div className="flex items-center gap-4">
+                 <span className="text-xs font-bold text-slate-500 hidden md:block">Welcome, {user}</span>
+                 <button onClick={() => setUser(null)} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-red-700 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-full transition-all shadow-sm">
+                   Log out
+                 </button>
+               </div>
+             ) : (
+               <button onClick={() => setIsLoginOpen(true)} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-teal-700 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-100 rounded-full transition-all shadow-sm">
+                 Log in
+               </button>
+             )}
           </div>
         </header>
 
@@ -205,6 +217,12 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <LoginModal 
+        isOpen={isLoginOpen} 
+        onClose={() => setIsLoginOpen(false)} 
+        onLogin={(username) => setUser(username)} 
+      />
     </div>
   );
 };
