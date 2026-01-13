@@ -33,6 +33,8 @@ class ChurchMusicCrawler:
         
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
+        self.audio_dir = os.path.join(output_dir, "audio")
+        os.makedirs(self.audio_dir, exist_ok=True)
         
         # Track visited URLs to avoid duplicates
         self.visited_urls: Set[str] = set()
@@ -121,6 +123,28 @@ class ChurchMusicCrawler:
         
         return list(set(links))  # Remove duplicates
     
+    async def _download_audio(self, session: aiohttp.ClientSession, url: str):
+        """Download audio file found on page"""
+        try:
+            # Extract filename from URL path (ignoring query params)
+            path = urlparse(url).path
+            filename = os.path.basename(path)
+            
+            if not filename or not filename.lower().endswith('.mp3'):
+                return
+                
+            filepath = os.path.join(self.audio_dir, filename)
+            
+            if not os.path.exists(filepath):
+                async with session.get(url) as response:
+                    if response.status == 200:
+                        content = await response.read()
+                        with open(filepath, 'wb') as f:
+                            f.write(content)
+                        print(f"  ✓ Downloaded audio: {filename}")
+        except Exception as e:
+            print(f"  ✗ Audio download failed: {e}")
+
     async def _crawl_page(
         self,
         session: aiohttp.ClientSession,
@@ -154,6 +178,16 @@ class ChurchMusicCrawler:
             
             # Parse HTML
             soup = BeautifulSoup(html, "html.parser")
+            
+            # Extract and download audio files
+            audio_links = []
+            for a in soup.find_all('a', href=True):
+                href = a['href']
+                if href.lower().endswith('.mp3'):
+                    audio_links.append(urljoin(url, href))
+            
+            for audio_url in set(audio_links):
+                await self._download_audio(session, audio_url)
             
             # Extract content
             content = self._extract_text_content(soup)

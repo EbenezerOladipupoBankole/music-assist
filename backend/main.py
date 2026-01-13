@@ -11,19 +11,27 @@ import os
 from datetime import datetime
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+import sys
+import re
+import random
 
 # Load environment variables from .env file
 load_dotenv()
 
+# Add root directory to path to import hymn_player
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # Global variables for RAG components
 rag_pipeline = None
+hymn_player = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize RAG pipeline on startup"""
-    global rag_pipeline
+    global rag_pipeline, hymn_player
     
     from rag_pipeline import RAGPipeline
+    from hymn_player import HymnPlayer
     
     # Initialize the RAG pipeline
     rag_pipeline = RAGPipeline(
@@ -35,6 +43,14 @@ async def lifespan(app: FastAPI):
     await rag_pipeline.initialize()
     
     print("✓ RAG Pipeline initialized successfully")
+
+    # Initialize Hymn Player
+    try:
+        hymn_player = HymnPlayer()
+        print(f"✓ HymnPlayer initialized with {len(hymn_player.known_hymns)} hymns")
+    except Exception as e:
+        print(f"⚠ Could not initialize HymnPlayer: {e}")
+
     yield
 
 # Initialize FastAPI app
@@ -98,6 +114,55 @@ async def chat(message: ChatMessage):
         if not rag_pipeline:
             raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
         
+        # 1. Check for Hymn/Singing Request
+        user_msg = message.message.lower().strip()
+        
+        # Look for "sing" or "play" followed by optional text
+        sing_match = re.search(r'\b(sing|play)\b\s*(.*)', user_msg)
+        
+        # Relaxed check to include "yes", "ok", or if the keyword is early in the sentence
+        is_request = (
+            user_msg.startswith(("sing", "play", "can you", "could you", "please", "yes", "ok", "sure")) 
+            or (sing_match and sing_match.start() < 10)
+        )
+
+        if hymn_player and sing_match and is_request:
+            query = sing_match.group(2).strip()
+            
+            # 1. Try to find specific hymns first
+            hymns = hymn_player.get_hymns(query)
+            
+            # 2. If no specific hymns found, check for generic request or empty query
+            # We check for keywords that imply "pick one for me"
+            is_generic = any(w in query.lower() for w in ["one", "any", "random", "something", "list", "song", "hymn"])
+            
+            if not hymns and (not query or is_generic):
+                random_title = random.choice(hymn_player.known_hymns)
+                hymns = hymn_player.get_hymns(random_title)
+            
+            if hymns:
+                # Build HTML response for one or multiple hymns
+                if len(hymns) == 1:
+                    response_text = f"I can help with that! Here is the official recording for '{hymns[0]['title']}':<br><br><audio controls src=\"{hymns[0]['url']}\"></audio>"
+                else:
+                    response_text = "I found the following hymns for you:<br>"
+                    for h in hymns:
+                        response_text += f"<br><strong>{h['title']}</strong><br><audio controls src=\"{h['url']}\"></audio><br>"
+
+                return ChatResponse(
+                    response=response_text,
+                    sources=[],
+                    conversation_id=message.conversation_id or "sing_request",
+                    timestamp=datetime.utcnow().isoformat(),
+                )
+            else:
+                return ChatResponse(
+                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current list of playable hymns includes: {', '.join(hymn_player.known_hymns)}.",
+                    sources=[],
+                    conversation_id=message.conversation_id or "sing_request_failed",
+                    timestamp=datetime.utcnow().isoformat(),
+                )
+
         # Process the query through RAG pipeline
         result = await rag_pipeline.query(
             query=message.message,
