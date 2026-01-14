@@ -1,47 +1,60 @@
-
+import { getApp } from "firebase/app";
+import { getFunctions, httpsCallable, connectFunctionsEmulator, Functions } from "firebase/functions";
 import { Message, Sender, Source } from "../types.ts";
 
 /**
  * MUSIC-ASSIST API SERVICE
- * Connects to the FastAPI/Python backend provided by the project team.
+ * Connects to the Firebase Cloud Functions backend.
  */
 
-const BACKEND_URL = "http://localhost:8000/chat"; // Update this to your friend's server URL
+let functionsInstance: Functions | null = null;
+
+function getSmartFunctions() {
+  if (!functionsInstance) {
+    const app = getApp();
+    functionsInstance = getFunctions(app);
+    // Determine environment
+    const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+    if (isLocal) {
+      // Connect to the local Firebase emulator suite
+      connectFunctionsEmulator(functionsInstance, "localhost", 5001);
+    }
+  }
+  return functionsInstance;
+}
 
 export class MusicAssistService {
-  async sendMessage(prompt: string, history: Message[]): Promise<{ text: string; sources: Source[] }> {
+  async sendMessage(
+    prompt: string,
+    history: Message[], // Kept for context, though backend uses conversation_id
+    conversationId: string | null
+  ): Promise<{ text: string; sources: Source[]; conversationId: string }> {
     try {
-      // Transforming history for the backend if needed
-      const chatHistory = history.map(m => ({
-        role: m.sender === Sender.USER ? "user" : "assistant",
-        content: m.text
-      }));
+      const functions = getSmartFunctions();
+      // 'chat' is the name of the Cloud Function
+      const chatFunction = httpsCallable(functions, 'chat');
 
-      // Send the query to the backend chat endpoint
-      const response = await fetch(BACKEND_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt, conversation_id: null })
+      const response = await chatFunction({ 
+        message: prompt, 
+        conversation_id: conversationId 
       });
 
-      if (!response.ok) {
-        const body = await response.text().catch(() => "");
-        throw new Error(`Backend error: ${response.status} ${body}`);
-      }
-
-      const data = await response.json();
+      const data = response.data as any;
 
       // Map backend ChatResponse to the frontend shape
       return {
         text: data.response,
-        sources: data.sources || []
+        sources: data.sources || [],
+        conversationId: data.conversation_id,
       };
     } catch (error) {
       console.error("Music-Assist API Error:", error);
       // Return a friendly fallback message for the UI when backend is unavailable
       return {
         text: "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.",
-        sources: []
+        sources: [],
+        // Return the previous ID or a new temporary one if it was null
+        conversationId: conversationId || `error_${Date.now()}`,
       };
     }
   }

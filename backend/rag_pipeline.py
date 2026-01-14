@@ -64,15 +64,21 @@ class RAGPipeline:
             index_file = os.path.join(self.vector_db_path, "index.faiss")
             abs_path = os.path.abspath(index_file)
             
+            loaded = False
             if os.path.exists(index_file):
-                self.vector_store = FAISS.load_local(
-                    self.vector_db_path,
-                    self.embeddings,
-                    allow_dangerous_deserialization=True
-                )
-                print(f"✓ Loaded existing vector store from {abs_path}")
-            else:
-                print(f"! No existing vector store found at: {abs_path}")
+                try:
+                    self.vector_store = FAISS.load_local(
+                        self.vector_db_path,
+                        self.embeddings,
+                        allow_dangerous_deserialization=True
+                    )
+                    print(f"✓ Loaded existing vector store from {abs_path}")
+                    loaded = True
+                except Exception as e:
+                    print(f"⚠ Error loading existing vector store: {e}")
+
+            if not loaded:
+                print(f"! No usable vector store found at: {abs_path}")
                 print("! Please run 'python populate_db.py' and ensure Phase 2 completes successfully.")
                 # Create empty vector store as fallback
                 try:
@@ -92,7 +98,7 @@ class RAGPipeline:
             
         except Exception as e:
             print(f"Error initializing RAG pipeline: {e}")
-            raise
+            # Don't raise; allow server to start so /crawl/trigger can be used
     
     def _initialize_qa_chain(self):
         """Initialize the conversational QA chain using LCEL"""
