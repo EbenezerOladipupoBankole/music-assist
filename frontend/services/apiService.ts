@@ -41,6 +41,12 @@ export class MusicAssistService {
 
       const data = response.data as any;
 
+      // Validate the response from the cloud function to ensure it has the expected shape.
+      if (!data || typeof data.response !== 'string' || typeof data.conversation_id !== 'string') {
+        console.error("Invalid response structure from 'chat' function:", data);
+        throw new Error("Received an invalid response from the backend service.");
+      }
+
       // Map backend ChatResponse to the frontend shape
       return {
         text: data.response,
@@ -48,14 +54,9 @@ export class MusicAssistService {
         conversationId: data.conversation_id,
       };
     } catch (error) {
-      console.error("Music-Assist API Error:", error);
-      // Return a friendly fallback message for the UI when backend is unavailable
-      return {
-        text: "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.",
-        sources: [],
-        // Return the previous ID or a new temporary one if it was null
-        conversationId: conversationId || `error_${Date.now()}`,
-      };
+      console.error("Music-Assist API Error: Failed to call the 'chat' cloud function.", error);
+      // Re-throw the original error so the UI layer can handle it and developers can see the full context.
+      throw error;
     }
   }
 }
