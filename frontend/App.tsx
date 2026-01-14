@@ -55,10 +55,16 @@ const App: React.FC = () => {
       setStatusText('Consultation complete');
     } catch (error) {
       console.error("App: Service Error", error);
+      
+      let errorMessage = "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.";
+      if (error instanceof Error) {
+        errorMessage += `\n\n[System Diagnostic: ${error.message}]`;
+      }
+
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         sender: Sender.AI,
-        text: "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.",
+        text: errorMessage,
         timestamp: Date.now()
       }]);
       setStatusText('Service unavailable');
