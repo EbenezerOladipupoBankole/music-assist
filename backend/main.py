@@ -34,15 +34,19 @@ async def lifespan(app: FastAPI):
     from hymn_player import HymnPlayer
     
     # Initialize the RAG pipeline
-    rag_pipeline = RAGPipeline(
-        vector_db_path=os.getenv("VECTOR_DB_PATH", "./data/vector_store"),
-        model_name=os.getenv("LLM_MODEL", "gpt-3.5-turbo")
-    )
-    
-    # Load or create vector store
-    await rag_pipeline.initialize()
-    
-    print("✓ RAG Pipeline initialized successfully")
+    try:
+        rag_pipeline = RAGPipeline(
+            vector_db_path=os.getenv("VECTOR_DB_PATH", "./data/vector_store"),
+            model_name=os.getenv("LLM_MODEL", "gpt-3.5-turbo")
+        )
+        
+        # Load or create vector store
+        await rag_pipeline.initialize()
+        
+        print("✓ RAG Pipeline initialized successfully")
+    except Exception as e:
+        print(f"⚠ RAG Pipeline failed to initialize: {e}")
+        rag_pipeline = None
 
     # Initialize Hymn Player
     try:
@@ -111,9 +115,6 @@ async def chat(message: ChatMessage):
     Main chat endpoint - processes user queries with RAG
     """
     try:
-        if not rag_pipeline:
-            raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
-        
         # 1. Check for Hymn/Singing Request
         user_msg = message.message.lower().strip()
         
@@ -162,6 +163,18 @@ async def chat(message: ChatMessage):
                     conversation_id=message.conversation_id or "sing_request_failed",
                     timestamp=datetime.utcnow().isoformat(),
                 )
+
+        # 2. Check for Greetings
+        if user_msg in ["hello", "hi", "hey", "greetings"]:
+            return ChatResponse(
+                response="Hello! I am Music-Assist. I can help you with LDS music theory, find hymns, or answer questions about conducting. How can I help you today?",
+                sources=[],
+                conversation_id=message.conversation_id or "greeting",
+                timestamp=datetime.utcnow().isoformat(),
+            )
+
+        if not rag_pipeline:
+            raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
 
         # Process the query through RAG pipeline
         result = await rag_pipeline.query(
