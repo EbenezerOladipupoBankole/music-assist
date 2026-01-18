@@ -43,17 +43,17 @@ async def lifespan(app: FastAPI):
         # Load or create vector store
         await rag_pipeline.initialize()
         
-        print("✓ RAG Pipeline initialized successfully")
+        print("[OK] RAG Pipeline initialized successfully")
     except Exception as e:
-        print(f"⚠ RAG Pipeline failed to initialize: {e}")
+        print(f"[WARNING] RAG Pipeline failed to initialize: {e}")
         rag_pipeline = None
 
     # Initialize Hymn Player
     try:
         hymn_player = HymnPlayer()
-        print(f"✓ HymnPlayer initialized with {len(hymn_player.known_hymns)} hymns")
+        print(f"[OK] HymnPlayer initialized with {len(hymn_player.known_hymns)} hymns")
     except Exception as e:
-        print(f"⚠ Could not initialize HymnPlayer: {e}")
+        print(f"[WARNING] Could not initialize HymnPlayer: {e}")
 
     yield
 

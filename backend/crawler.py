@@ -141,9 +141,9 @@ class ChurchMusicCrawler:
                         content = await response.read()
                         with open(filepath, 'wb') as f:
                             f.write(content)
-                        print(f"  ✓ Downloaded audio: {filename}")
+                        print(f"  [OK] Downloaded audio: {filename}")
         except Exception as e:
-            print(f"  ✗ Audio download failed: {e}")
+            print(f"  [X] Audio download failed: {e}")
 
     async def _crawl_page(
         self,
@@ -171,7 +171,7 @@ class ChurchMusicCrawler:
             # Fetch page
             async with session.get(url, headers=self.headers, timeout=30) as response:
                 if response.status != 200:
-                    print(f"  ✗ Status {response.status}")
+                    print(f"  [X] Status {response.status}")
                     return None
                 
                 html = await response.text()
@@ -193,7 +193,7 @@ class ChurchMusicCrawler:
             content = self._extract_text_content(soup)
             
             if not content or len(content) < 100:
-                print(f"  ✗ Insufficient content")
+                print(f"  [X] Insufficient content")
                 return None
             
             # Extract metadata
@@ -206,7 +206,7 @@ class ChurchMusicCrawler:
                 "depth": depth
             }
             
-            print(f"  ✓ Extracted {len(content)} chars")
+            print(f"  [OK] Extracted {len(content)} chars")
             
             # Save document
             filename = f"doc_{len(self.crawled_data):04d}.json"
@@ -225,10 +225,10 @@ class ChurchMusicCrawler:
             return {"document": document, "links": []}
             
         except asyncio.TimeoutError:
-            print(f"  ✗ Timeout")
+            print(f"  [X] Timeout")
             return None
         except Exception as e:
-            print(f"  ✗ Error: {e}")
+            print(f"  [X] Error: {e}")
             return None
     
     async def crawl_sites(self, start_urls: List[str]) -> Dict:
