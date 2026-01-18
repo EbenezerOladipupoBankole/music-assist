@@ -17,7 +17,10 @@ cd backend
 
 ### Option A: Using Poetry (Recommended)
 ```bash
+# Install dependencies
 poetry install
+# Or add them if starting fresh:
+poetry add fastapi uvicorn python-multipart pydantic langchain langchain-openai langchain-community langchain-text-splitters openai faiss-cpu aiohttp beautifulsoup4 lxml numpy pandas python-dotenv firebase-admin python-json-logger
 ```
 
 ### Option B: Using Pip
@@ -32,7 +35,7 @@ python -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install fastapi uvicorn python-multipart pydantic langchain langchain-openai langchain-community langchain-text-splitters openai faiss-cpu aiohttp beautifulsoup4 lxml numpy pandas python-dotenv firebase-admin python-json-logger
+pip install -r requirements.txt
 ```
 
 ## ⚙️ Configuration
