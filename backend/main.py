@@ -18,6 +18,9 @@ import random
 # Load environment variables from .env file
 load_dotenv()
 
+# Add root directory to path to import hymn_player
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 # Global variables for RAG components
 rag_pipeline = None
 hymn_player = None

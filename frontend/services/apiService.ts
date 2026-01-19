@@ -1,61 +1,80 @@
-import { getApp } from "firebase/app";
-import { getFunctions, httpsCallable, connectFunctionsEmulator, Functions } from "firebase/functions";
-import { Message, Sender, Source } from "../types.ts";
+import { Message, Source } from "../types.ts";
 
 /**
  * MUSIC-ASSIST API SERVICE
- * Connects to the Firebase Cloud Functions backend.
+ * Connects to the FastAPI backend running on localhost:8000
  */
 
-let functionsInstance: Functions | null = null;
+const API_BASE_URL = 'http://localhost:8000';
 
-function getSmartFunctions() {
-  if (!functionsInstance) {
-    const app = getApp();
-    functionsInstance = getFunctions(app);
-    // Determine environment
-    const isLocal = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
-    if (isLocal) {
-      // Connect to the local Firebase emulator suite
-      connectFunctionsEmulator(functionsInstance, "localhost", 5001);
-    }
-  }
-  return functionsInstance;
+interface BackendChatResponse {
+  response: string;
+  sources: Array<{
+    type: 'local' | 'web';
+    title: string;
+    source: string;
+    url?: string;
+  }>;
+  conversation_id: string;
+  timestamp: string;
 }
 
 export class MusicAssistService {
+  private conversationId: string | null = null;
+
   async sendMessage(
     prompt: string,
-    history: Message[], // Kept for context, though backend uses conversation_id
-    conversationId: string | null
+    history: Message[],
+    conversationId?: string | null
   ): Promise<{ text: string; sources: Source[]; conversationId: string }> {
     try {
-      const functions = getSmartFunctions();
-      // 'chat' is the name of the Cloud Function
-      const chatFunction = httpsCallable(functions, 'chat');
+      const currentConversationId = conversationId || this.conversationId;
 
-      const response = await chatFunction({ 
-        message: prompt, 
-        conversation_id: conversationId 
+      const response = await fetch(`${API_BASE_URL}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: prompt,
+          conversation_id: currentConversationId,
+          user_id: null
+        })
       });
 
-      const data = response.data as any;
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error("RAG pipeline not initialized. Please contact administrator.");
+        }
+        throw new Error(`Backend error: ${response.status} ${response.statusText}`);
+      }
 
-      // Validate the response from the cloud function to ensure it has the expected shape.
-      if (!data || typeof data.response !== 'string' || typeof data.conversation_id !== 'string') {
-        console.error("Invalid response structure from 'chat' function:", data);
+      const data: BackendChatResponse = await response.json();
+
+      if (!data || typeof data.response !== 'string') {
+        console.error("Invalid response structure from backend:", data);
         throw new Error("Received an invalid response from the backend service.");
       }
 
-      // Map backend ChatResponse to the frontend shape
+      this.conversationId = data.conversation_id;
+
+      const mappedSources: Source[] = (data.sources || []).map(source => ({
+        title: source.title || source.source,
+        url: source.url || source.source
+      }));
+
       return {
         text: data.response,
-        sources: data.sources || [],
+        sources: mappedSources,
         conversationId: data.conversation_id,
       };
     } catch (error) {
-      console.error("Music-Assist API Error: Failed to call the 'chat' cloud function.", error);
-      // Re-throw the original error so the UI layer can handle it and developers can see the full context.
+      console.error("Music-Assist API Error:", error);
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error("Cannot connect to backend. Please ensure the server is running on http://localhost:8000");
+      }
+      
       throw error;
     }
   }
