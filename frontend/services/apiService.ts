@@ -2,10 +2,10 @@ import { Message, Source } from "../types.ts";
 
 /**
  * MUSIC-ASSIST API SERVICE
- * Connects to the FastAPI backend running on localhost:8000
+ * Connects to the FastAPI backend running on localhost:8080
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'http://localhost:8080';
 
 interface BackendChatResponse {
   response: string;
@@ -72,7 +72,7 @@ export class MusicAssistService {
       console.error("Music-Assist API Error:", error);
       
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure the server is running on http://localhost:8000");
+        throw new Error("Cannot connect to backend. Please ensure the server is running on http://localhost:8080");
       }
       
       throw error;
