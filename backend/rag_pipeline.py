@@ -667,9 +667,9 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
                 }
             )
             
-            # Use get_relevant_documents for consistent List[Document] return
+            # Use invoke for LangChain retriever (get_relevant_documents is deprecated)
             docs = await asyncio.to_thread(
-                retriever.get_relevant_documents,
+                retriever.invoke,
                 query
             )
             
