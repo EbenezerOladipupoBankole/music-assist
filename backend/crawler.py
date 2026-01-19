@@ -40,8 +40,12 @@ class ChurchMusicCrawler:
         self.visited_urls: Set[str] = set()
         self.crawled_data: List[Dict] = []
         
-        # Allowed domains (restrict to churchofjesuschrist.org)
-        self.allowed_domains = ["www.churchofjesuschrist.org"]
+        # Allowed domains (restrict to official Church and Tabernacle Choir sites)
+        self.allowed_domains = [
+            "www.churchofjesuschrist.org",
+            "www.thetabernaclechoir.org",
+            "thetabernaclechoir.org"
+        ]
         
         # User agent for responsible crawling
         self.headers = {

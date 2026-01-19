@@ -211,11 +211,47 @@ async def trigger_crawl(admin_key: str):
         )
         
         urls = [
+            # Hymns and Music Library
             "https://www.churchofjesuschrist.org/media/music?lang=eng",
+            "https://www.churchofjesuschrist.org/music/library/hymns?lang=eng",
             "https://www.churchofjesuschrist.org/initiative/new-hymns?lang=eng",
+            "https://www.churchofjesuschrist.org/media/music/archived-content?lang=eng",
+            
+            # Music Guidelines and Handbooks
             "https://www.churchofjesuschrist.org/callings/music/common-questions-about-music-in-church-meetings?lang=eng",
             "https://www.churchofjesuschrist.org/study/handbooks-and-callings/ward-or-branch-callings/music?lang=eng",
-            "https://www.churchofjesuschrist.org/media/music/archived-content?lang=eng"
+            "https://www.churchofjesuschrist.org/study/manual/general-handbook/19-music?lang=eng",
+            "https://www.churchofjesuschrist.org/study/manual/general-handbook/38-church-policies-and-guidelines?lang=eng",
+            
+            # Tabernacle Choir (Mack Wilberg and other conductors)
+            "https://www.churchofjesuschrist.org/media/music/tabernacle-choir?lang=eng",
+            "https://www.thetabernaclechoir.org/about.html",
+            "https://www.thetabernaclechoir.org/about/conductors.html",
+            "https://www.churchofjesuschrist.org/study/ensign/topics/tabernacle-choir-at-temple-square?lang=eng",
+            "https://www.churchofjesuschrist.org/study/friend/topics/tabernacle-choir?lang=eng",
+            
+            # Music Theory and Education
+            "https://www.churchofjesuschrist.org/study/music?lang=eng",
+            "https://www.churchofjesuschrist.org/study/manual/conducting-course?lang=eng",
+            "https://www.churchofjesuschrist.org/music/resources?lang=eng",
+            
+            # Children's Songbook
+            "https://www.churchofjesuschrist.org/music/text/childrens-songbook?lang=eng",
+            "https://www.churchofjesuschrist.org/children/resources/music?lang=eng",
+            
+            # Articles and Ensign Topics
+            "https://www.churchofjesuschrist.org/study/ensign/topics/music?lang=eng",
+            "https://www.churchofjesuschrist.org/study/ensign/topics/hymns?lang=eng",
+            "https://www.churchofjesuschrist.org/study/ensign/topics/choirs?lang=eng",
+            "https://www.churchofjesuschrist.org/study/liahona/topics/music?lang=eng",
+            
+            # Music Callings and Service
+            "https://www.churchofjesuschrist.org/callings/music?lang=eng",
+            "https://www.churchofjesuschrist.org/study/manual/music-callings?lang=eng",
+            
+            # Composer and Arranger Resources
+            "https://www.churchofjesuschrist.org/study/ensign/topics/composers?lang=eng",
+            "https://www.churchofjesuschrist.org/music/library/composers?lang=eng"
         ]
         
         results = await crawler.crawl_sites(urls)
