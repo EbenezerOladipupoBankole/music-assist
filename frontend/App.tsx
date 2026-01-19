@@ -2,10 +2,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender } from './types.ts';
 import { musicAssistApi } from './services/apiService.ts';
-import { APP_NAME, SUGGESTED_PROMPTS, COLORS, REFERENCE_LINKS } from './constants.ts';
+import { APP_NAME, SUGGESTED_PROMPTS, COLORS } from './constants.ts';
 import ChatMessage from './components/ChatMessage.tsx';
 import ChatInput from './components/ChatInput.tsx';
 import LoginModal from './components/LoginModal.tsx';
+import { auth, googleProvider } from './firebase.ts';
+import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -14,7 +16,10 @@ const App: React.FC = () => {
   const [statusText, setStatusText] = useState('System Standby');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<string | null>(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [queryCount, setQueryCount] = useState<number>(() => {
+    return parseInt(localStorage.getItem('music_assist_query_count') || '0');
+  });
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -25,8 +30,45 @@ const App: React.FC = () => {
     }
   }, [messages, isLoading]);
 
+  // Monitor Firebase Auth State
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser.displayName || currentUser.email);
+      } else {
+        setUser(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+      setIsLoginModalOpen(false);
+    } catch (error) {
+      console.error("Login failed", error);
+      alert("Authentication failed. Please try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
+
+    // Check query limit for unauthenticated users
+    if (!user && queryCount >= 5) {
+      setIsLoginModalOpen(true);
+      return;
+    }
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -40,6 +82,13 @@ const App: React.FC = () => {
     setStatusText('Reviewing handbook...');
 
     try {
+      // Increment query count if not logged in
+      if (!user) {
+        const newCount = queryCount + 1;
+        setQueryCount(newCount);
+        localStorage.setItem('music_assist_query_count', newCount.toString());
+      }
+
       // Consultation with the Music-Assist RAG backend
       const response = await musicAssistApi.sendMessage(text, messages);
 
@@ -89,27 +138,6 @@ const App: React.FC = () => {
           <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.25em]">Ecclesiastical Intelligence</p>
         </div>
 
-        <div className="flex-1 px-8 py-10 overflow-y-auto scrollbar-hide">
-          <h2 className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-8 px-2 flex items-center gap-3">
-             <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
-             Canonical Reference
-          </h2>
-          <nav className="space-y-2">
-            {REFERENCE_LINKS.map((link, i) => (
-              <a 
-                key={i} 
-                href={link.url} 
-                target="_blank" 
-                rel="noreferrer"
-                className="group flex items-center justify-between p-4 text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all border border-transparent hover:border-white/5"
-              >
-                <span className="truncate max-w-[180px]">{link.name}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-              </a>
-            ))}
-          </nav>
-        </div>
-
         <div className="p-10 border-t border-white/5 mt-auto bg-slate-900/50">
            <div className="flex items-center gap-3 mb-4">
               <div className={`w-2 h-2 rounded-full animate-pulse ${isLoading ? 'bg-amber-500' : 'bg-teal-500'}`}></div>
@@ -139,13 +167,13 @@ const App: React.FC = () => {
              {user ? (
                <div className="flex items-center gap-4">
                  <span className="text-xs font-bold text-slate-500 hidden md:block">Welcome, {user}</span>
-                 <button onClick={() => setUser(null)} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-red-700 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-full transition-all shadow-sm">
+                 <button onClick={handleLogout} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-red-700 bg-white hover:bg-red-50 border border-slate-200 hover:border-red-100 rounded-full transition-all shadow-sm">
                    Log out
                  </button>
                </div>
              ) : (
-               <button onClick={() => setIsLoginOpen(true)} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-teal-700 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-100 rounded-full transition-all shadow-sm">
-                 Log in
+               <button onClick={() => setIsLoginModalOpen(true)} className="px-6 py-2.5 text-[11px] font-bold text-slate-600 hover:text-teal-700 bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-100 rounded-full transition-all shadow-sm">
+                 Log in with Google
                </button>
              )}
           </div>
@@ -225,9 +253,9 @@ const App: React.FC = () => {
       </main>
 
       <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onLogin={(username) => setUser(username)} 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+        onLogin={handleGoogleLogin} 
       />
     </div>
   );
