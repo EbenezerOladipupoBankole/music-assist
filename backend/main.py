@@ -15,11 +15,11 @@ import sys
 import re
 import random
 
+# Add current directory to path to ensure local imports (like rag_pipeline) work
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 # Load environment variables from .env file
 load_dotenv()
-
-# Add root directory to path to import hymn_player
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Global variables for RAG components
 rag_pipeline = None
