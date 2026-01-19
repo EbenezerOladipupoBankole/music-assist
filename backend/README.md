@@ -40,7 +40,15 @@ pip install -r requirements.txt
 
 ## ⚙️ Configuration
 
-1.  Copy the environment template:
+1.  **Firebase Setup (for Conversation Memory)**
+    - Go to your Firebase project settings > Service accounts.
+    - Click "Generate new private key" and download the JSON file.
+    - **Important**: Keep this file secure and do not commit it to Git.
+    - Place the file somewhere safe, for example, in your project's root directory (outside `backend`).
+    - Set an environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of this file. You can do this in your operating system or in the `.env` file below.
+
+2.  **Environment Variables**
+    - Copy the environment template:
 ```bash
 cp .env.example .env
 ```
@@ -80,7 +88,7 @@ Open a terminal and run the backend server:
 source venv/bin/activate  # macOS/Linux
 
 # Start server
-python -m uvicorn main:app --reload --port 8000
+python -m uvicorn main:app --reload --port 8080
 ```
 *The server will start at `http://127.0.0.1:8000`*
 *API docs available at `http://127.0.0.1:8000/docs`*
