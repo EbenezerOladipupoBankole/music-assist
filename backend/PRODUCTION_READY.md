@@ -298,11 +298,11 @@ python populate_db.py
 python test_production_features.py
 
 # 4. Start server
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn main:app --host 0.0.0.0 --port 8080 --reload
 
 # 5. Monitor
-curl http://localhost:8000/api/health
-curl http://localhost:8000/api/stats
+curl http://localhost:8080/api/health
+curl http://localhost:8080/api/stats
 
 # 6. Deploy! 🚀
 ```

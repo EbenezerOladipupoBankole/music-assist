@@ -11,7 +11,7 @@ from datetime import datetime
 
 def ask_question(question: str, category: str = "") -> dict:
     """Send question to RAG and get response"""
-    url = "http://127.0.0.1:8000/chat"
+    url = "http://127.0.0.1:8080/chat"
     
     try:
         print(f"\n{'='*80}")
@@ -45,7 +45,7 @@ def ask_question(question: str, category: str = "") -> dict:
             return {"success": False, "question": question, "error": f"HTTP {response.status_code}"}
             
     except requests.exceptions.ConnectionError:
-        print("\n[ERROR] Cannot connect to server on port 8000")
+        print("\n[ERROR] Cannot connect to server on port 8080")
         return {"success": False, "question": question, "error": "Connection failed"}
     except Exception as e:
         print(f"\n[ERROR] {e}")
