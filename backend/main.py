@@ -31,7 +31,6 @@ async def lifespan(app: FastAPI):
     global rag_pipeline, hymn_player
     
     from rag_pipeline import RAGPipeline
-    from hymn_player import HymnPlayer
     
     # Initialize the RAG pipeline
     try:
@@ -48,12 +47,17 @@ async def lifespan(app: FastAPI):
         print(f"[WARNING] RAG Pipeline failed to initialize: {e}")
         rag_pipeline = None
 
-    # Initialize Hymn Player
+    # Initialize Hymn Player (optional feature)
     try:
+        from hymn_player import HymnPlayer
         hymn_player = HymnPlayer()
         print(f"[OK] HymnPlayer initialized with {len(hymn_player.known_hymns)} hymns")
+    except ImportError:
+        print("[INFO] HymnPlayer module not available - audio playback disabled")
+        hymn_player = None
     except Exception as e:
         print(f"[WARNING] Could not initialize HymnPlayer: {e}")
+        hymn_player = None
 
     yield
 

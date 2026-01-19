@@ -108,8 +108,8 @@ class RAGPipeline:
         # Improved text splitter with better separators for preserving context
         # Separators ordered by preference - tries to break at natural boundaries
         self.text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=self.chunk_size,
+            chunk_overlap=self.chunk_overlap,
             separators=[
                 "\n\n",      # Double newline (paragraph breaks) - best
                 "\n",        # Single newline - good
