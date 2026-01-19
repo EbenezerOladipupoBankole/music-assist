@@ -145,3 +145,6 @@ cp .env.example .env
 # You're ready to go!
 python -m uvicorn main:app --reload
 ```
+
+
+Firebase Url <https://music-assits.web.app/>
