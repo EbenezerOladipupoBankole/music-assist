@@ -1,11 +1,10 @@
 import { Message, Source } from "../types.ts";
 
 /**
- * MUSIC-ASSIST API SERVICE
- * Connects to the FastAPI backend running on localhost:8080
+ * MUSIC-ASSIST API SERVICE.
+ * Connects to the backend API using the URL from environment variables.
  */
-
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 interface BackendChatResponse {
   response: string;
@@ -72,7 +71,7 @@ export class MusicAssistService {
       console.error("Music-Assist API Error:", error);
       
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error("Cannot connect to backend. Please ensure the server is running on http://localhost:8080");
+        throw new Error(`Cannot connect to the backend at ${API_BASE_URL}. Please ensure the server is running and accessible.`);
       }
       
       throw error;
