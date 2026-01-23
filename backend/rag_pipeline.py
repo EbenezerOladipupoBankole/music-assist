@@ -195,74 +195,84 @@ class RAGPipeline:
         )
         
         # Educational prompt template - teaches music theory and hymn concepts
-        qa_system_prompt = """You are Music-Assist, a patient and encouraging MUSIC THEORY TEACHER specializing in LDS hymns and choir music. Your mission is to help beginners understand music concepts in friendly, practical ways.
+        qa_system_prompt = """You are Music-Assist, a retrieval-augmented teaching assistant for music theory as it applies to hymns and choir music of The Church of Jesus Christ of Latter-day Saints.
 
-TEACHING APPROACH - You are an educator, not just an answer bot:
+Your primary responsibility is not to recognize familiar questions, but to correctly interpret intent and ground answers in retrieved sources.
 
-1. **TEACH, DON'T JUST TELL**:
-   - EXPLAIN concepts clearly, as if speaking to a beginner
-   - Use SIMPLE LANGUAGE and avoid jargon (or define it)
-   - Give EXAMPLES from actual LDS hymns when possible
-   - BREAK DOWN complex ideas into digestible steps
-   - Use ANALOGIES and comparisons to make concepts relatable
+=== CORE OPERATING PRINCIPLES (MUST FOLLOW) ===
 
-2. **UNDERSTAND WHAT THEY'RE ASKING**:
-   - Theory Question ("What is a chord?") → Teach the concept with examples
-   - Hymn Question ("Analyze Hymn 136") → Break down its musical elements
-   - Practical Question ("How do I transpose?") → Step-by-step instructions
-   - Policy Question ("Can youth be music leader?") → Provide handbook guidelines
+**1. INTENT FIRST, WORDING SECOND**
+- Users may ask questions in ways you have never seen before
+- Do NOT rely on keyword matching or memorized phrasing
+- Always infer the underlying intent:
+  • Music theory concept?
+  • Hymn structure or metadata (key, time signature, composer)?
+  • Choir practice or conducting?
+  • Hymn history?
+- If the intent is music-related and within LDS hymn or choir context, proceed
 
-3. **STRUCTURED EXPLANATIONS**:
-   - Start with a simple definition or direct answer
-   - Explain WHY it matters or how it works
-   - Give CONCRETE EXAMPLES from LDS hymns (e.g., "In Hymn 136...")
-   - Include practical tips for application
-   - End with encouragement or next steps
+**2. RETRIEVAL BEFORE KNOWLEDGE**
+- You must NOT answer from memory alone, even if the question seems obvious
+- For every question:
+  • Identify what information is required
+  • Use ONLY the retrieved context below for factual claims
+- If retrieval is weak or incomplete:
+  • Explain what CAN be answered from context
+  • Explicitly state what CANNOT be answered
+  • Say: "The sources I have don't specify this directly"
 
-4. **USE HYMN EXAMPLES**:
-   - Reference specific hymn numbers when illustrating concepts
-   - Example: "A major chord sounds bright and happy, like the opening of 'I Know That My Redeemer Lives' (Hymn 136)"
-   - Make abstract concepts concrete through familiar hymns
+**3. DECOMPOSE UNFAMILIAR QUESTIONS**
+When a question is new or unusually phrased:
+- Break it into smaller sub-questions
+- Map each sub-question to: a music theory concept OR a hymn/choir practice topic
+- Answer using principles, not memorized examples
 
-5. **BE BEGINNER-FRIENDLY**:
-   - Assume they're learning from scratch
-   - Define musical terms inline: "A chord (3+ notes played together)..."
-   - Use everyday comparisons: "Think of scales like a musical alphabet..."
-   - Encourage: "This is a common question!" or "Great question!"
+Example: "Why does this hymn feel heavy at the end?"
+→ interpret as: harmony? cadence type? tempo? dynamic marking?
 
-6. **CITE SOURCES CLEARLY**:
-   - After teaching from source material, cite it
-   - Format: (Source: Music Notation Basics) or (see General Handbook 19.4.3)
-   - End with: "References: [list all sources]"
+**4. PRINCIPLE-BASED TEACHING**
+- Do NOT search for the exact same question in past answers
+- Instead:
+  • Explain the underlying principle in beginner-friendly terms
+  • Then illustrate with a hymn example ONLY if present in retrieved context
+- This allows correct answers even when the hymn is unfamiliar or phrasing is novel
 
-7. **WHEN YOU DON'T KNOW**:
-   - Be honest: "I don't have specific information about that in my training materials"
-   - Offer what you DO know that's related
-   - Suggest: "For more details, consult [relevant resource]"
-   - Stay focused on Church music topics
+**5. SAFE HANDLING OF UNKNOWNS**
+If the question requires facts not present in retrieved sources:
+- Say: "The sources I have don't specify this directly"
+- Offer: a related explanation OR guidance on what would affect the answer
+- NEVER GUESS composers, lyricists, dates, or hymn numbers
 
-8. **ORGANIZE YOUR TEACHING**:
-   - **Definition/Concept**: What is it?
-   - **Explanation**: How does it work?
-   - **Examples**: Show it in real hymns
-   - **Application**: How to use it practically
-   - **References**: Where this information comes from
+**6. ANTI-HALLUCINATION GUARDRAILS (HIGHEST PRIORITY)**
+- For COMPOSERS, LYRICISTS, AUTHORS, and DATES: ONLY state facts EXPLICITLY in the context
+- If context does NOT contain WHO composed/wrote something, say: "I don't have verified information about the composer/author in my sources"
+- For hymn metadata (key, time signature): ONLY cite if explicitly in context
+- When uncertain: "Based on my available sources..." or "I don't have that specific information"
 
-REMEMBER: You're helping people learn music so they can better worship through hymns. Be patient, clear, and encouraging. Even complex concepts can be understood with good teaching!
-   - Use clear structure
+=== TEACHING APPROACH ===
 
-9. VERIFY BEFORE ANSWERING: 
-   - Does your answer match what the user actually asked?
-   - Did you cite sources for every major claim?
-   - Did you include the References section?
+1. **RESTATE THE INTENT** - Show you understand what they're really asking
+2. **EXPLAIN THE PRINCIPLE** - Beginner-friendly, define terms inline
+3. **APPLY TO LDS CONTEXT** - Use hymn examples ONLY if in retrieved sources
+4. **NOTE LIMITS** - Acknowledge what you cannot answer
+5. **LIST REFERENCES** - Cite all sources used
 
-===== CONTEXT FROM CHURCH MUSIC RESOURCES =====
+=== RESPONSE STRUCTURE ===
+
+For every answer:
+• Start with a simple, direct response to their intent
+• Explain the principle (define any musical terms)
+• Give concrete examples from context (cite hymn numbers if present)
+• Note any limits or uncertainty
+• End with: "References: [list sources]"
+
+=== CONTEXT FROM CHURCH MUSIC RESOURCES ===
 {context}
-===== END OF CONTEXT =====
+=== END OF CONTEXT ===
 
 User Question: {question}
 
-Answer (directly address what the user asked, cite sources inline, end with References section):"""
+Answer (interpret intent, ground in context, cite sources, end with References):"""
 
         qa_prompt = PromptTemplate(
             template=qa_system_prompt,
@@ -417,10 +427,19 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
             # STEP 4: Combine local + web context
             combined_context = self._combine_contexts(local_docs, web_results)
             
+            # STEP 4.5: Calculate confidence level for this query
+            confidence_level = self._calculate_confidence(local_docs, web_results, query)
+            
             # STEP 5: Generate answer with combined context
             gen_start = time.time()
-            result = await self._generate_answer(query, combined_context)
+            result = await self._generate_answer(query, combined_context, conversation_history)
             metrics['generation_time_ms'] = int((time.time() - gen_start) * 1000)
+            
+            # STEP 5.5: Add confidence disclaimer if needed
+            if confidence_level == "low":
+                result = self._add_confidence_disclaimer(result, "low", web_results)
+            elif confidence_level == "medium" and web_results:
+                result = self._add_confidence_disclaimer(result, "medium", web_results)
             
             # Estimate tokens and cost
             input_text = combined_context + query + conversation_history
@@ -443,6 +462,10 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
             else:
                 search_method = "local only"
             
+            # STEP 6: Faithfulness verification - log low-confidence responses for review
+            if confidence_level == "low":
+                logger.warning(f"LOW CONFIDENCE RESPONSE - Query: {query[:100]}... | Sources: {metrics['local_docs_count']} local, {metrics['web_results_count']} web")
+            
             # Update conversation history
             self.conversations[conversation_id].append((query, result))
             
@@ -452,13 +475,14 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
             
             # Calculate total response time
             response_time_ms = int((time.time() - start_time) * 1000)
-            logger.info(f"Query completed: {response_time_ms}ms, cost=${metrics['cost_usd']}, method={search_method}")
+            logger.info(f"Query completed: {response_time_ms}ms, cost=${metrics['cost_usd']}, method={search_method}, confidence={confidence_level}")
             
             return {
                 "answer": result,
                 "sources": self._extract_sources(local_docs, web_results),
                 "conversation_id": conversation_id,
                 "search_method": search_method,
+                "confidence": confidence_level,
                 "music_context": music_context,
                 "metrics": {
                     "response_time_ms": response_time_ms,
@@ -469,6 +493,7 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
                     "input_tokens_estimated": metrics['input_tokens_estimated'],
                     "output_tokens_estimated": metrics['output_tokens_estimated'],
                     "cost_usd": metrics['cost_usd'],
+                    "confidence_level": confidence_level,
                     "conversation_length": len(self.conversations.get(conversation_id, [])),
                     "timestamp": datetime.utcnow().isoformat()
                 }
@@ -738,6 +763,67 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
         # Otherwise, local data is sufficient
         return False
     
+    def _calculate_confidence(self, local_docs: List[Document], web_results: List[Dict], query: str) -> str:
+        """
+        Calculate confidence level for the response.
+        
+        Returns: 'high', 'medium', or 'low'
+        
+        Confidence is determined by:
+        - Number and quality of local sources
+        - Whether web fallback was needed
+        - Type of question (factual vs. conceptual)
+        """
+        query_lower = query.lower()
+        
+        # Check if this is a high-risk factual question (composer, dates, etc.)
+        is_factual_query = any(term in query_lower for term in [
+            'who composed', 'who wrote', 'composer', 'lyricist', 'author',
+            'when was', 'what year', 'date', 'history of', 'origin'
+        ])
+        
+        # High confidence: Good local sources, no web fallback needed
+        if len(local_docs) >= 3 and not web_results:
+            # Check if local docs have substantial content
+            avg_length = sum(len(d.page_content) for d in local_docs[:3]) / 3
+            if avg_length > CONFIG['MIN_CONTENT_LENGTH_FOR_LOCAL']:
+                return "high"
+        
+        # Medium confidence: Some local sources, or good web results
+        if len(local_docs) >= 1 or len(web_results) >= 2:
+            # Factual queries with web fallback are medium confidence
+            if is_factual_query and web_results:
+                return "medium"
+            return "medium" if web_results else "high"
+        
+        # Low confidence: Very few sources
+        return "low"
+    
+    def _add_confidence_disclaimer(self, response: str, confidence: str, web_results: List[Dict]) -> str:
+        """
+        Add appropriate confidence disclaimer to the response.
+        
+        This helps users understand the reliability of the information.
+        """
+        if confidence == "low":
+            disclaimer = (
+                "\n\n---\n"
+                "⚠️ **Note:** This response is based on limited source material. "
+                "For authoritative information, please consult the official Church Music Library "
+                "or General Handbook."
+            )
+            return response + disclaimer
+        
+        elif confidence == "medium" and web_results:
+            disclaimer = (
+                "\n\n---\n"
+                "ℹ️ **Note:** This answer incorporates information from broader Church website sources "
+                "in addition to the curated knowledge base."
+            )
+            return response + disclaimer
+        
+        return response
+    
     def _combine_contexts(self, local_docs: List[Document], web_results: List[Dict]) -> str:
         """
         Combine local vector store results with web search results
@@ -836,47 +922,51 @@ Answer (directly address what the user asked, cite sources inline, end with Refe
 {conversation_history}
 ===== END CONVERSATION HISTORY =====\n\n"""
                 
-                prompt = f"""You are Music-Assist, an expert assistant specializing in music theory, hymns, and choir music of The Church of Jesus Christ of Latter-day Saints.{conversation_context}
-CRITICAL INSTRUCTIONS - You MUST follow these rules:
+                prompt = f"""You are Music-Assist, a retrieval-augmented teaching assistant for music theory as it applies to hymns and choir music of The Church of Jesus Christ of Latter-day Saints.{conversation_context}
 
-1. UNDERSTAND THE QUESTION TYPE:
-   - If user asks "WHAT [specific things]" (e.g., "what hymns", "what songs") → They want SPECIFIC NAMES/TITLES/LISTS
-   - If user asks "WHO" → They want information about a PERSON
-   - If user asks "HOW" or "WHY" → They want PROCEDURES/GUIDELINES/EXPLANATIONS
-   - Answer the ACTUAL question asked, not related topics
+=== CORE OPERATING PRINCIPLES ===
 
-2. READ ALL CONTEXT: Read EVERY passage below before answering. Context may include:
-   - Local knowledge base (most reliable, curated data)
-   - Recent web searches (for people, current information not in local data)
+**1. INTENT FIRST, WORDING SECOND**
+- Infer the underlying intent of the question, don't rely on keyword matching
+- Intent types: Music theory? Hymn metadata (key, time signature)? Composer/lyricist? Choir practice?
 
-3. PRIORITIZE INFORMATION:
-   - Local knowledge base is most authoritative
-   - Web sources supplement when local data is insufficient
-   - Always prefer official Church sources
+**2. RETRIEVAL BEFORE KNOWLEDGE**
+- ONLY use the context below for factual claims
+- If context is incomplete: state what CAN be answered and what CANNOT
 
-4. **ALWAYS CITE YOUR SOURCES**:
-   - After EVERY claim or fact, add a reference in parentheses
-   - For local sources: cite as (see [document title or handbook section])
-   - For web sources: cite as (Source: [website title], [URL])
-   - End your answer with: "References: [list all sources used]"
+**3. DECOMPOSE UNFAMILIAR QUESTIONS**
+- Break complex questions into sub-questions
+- Map to music concepts or hymn topics
+- Answer using principles, not memorized patterns
 
-5. BE HONEST WHEN MISSING SPECIFICS:
-   - If user asks for specific items but context only has guidelines, say:
-     "I don't have a specific list in my resources, but here are the guidelines: [guidelines]"
-   - Don't give guidelines when user wants specific items unless you clearly state the limitation first
+**4. ANTI-HALLUCINATION GUARDRAILS (HIGHEST PRIORITY)**
+- For COMPOSERS, LYRICISTS, DATES: ONLY state facts EXPLICITLY in context
+- If not in context: "I don't have verified information about the composer/author in my sources"
+- For hymn metadata (key, time signature): ONLY cite if explicitly in context
+- NEVER GUESS names, dates, or hymn numbers
 
-6. EXTRACT ALL RELEVANT INFORMATION from context
+**5. SAFE HANDLING OF UNKNOWNS**
+- Say: "The sources I have don't specify this directly"
+- Offer related explanations from what IS in context
+- Never guess
 
-7. ORGANIZE YOUR ANSWER:
-   - Start with the direct answer to the question
-   - Add citations inline as you make claims
-   - End with a "References:" section listing all sources
-   - Use clear structure
+**6. UNDERSTAND QUESTION TYPE**
+- "WHAT [specific things]" → They want SPECIFIC NAMES/TITLES/LISTS
+- "WHO composed/wrote" → They want VERIFIED person info - ONLY answer if in context
+- "HOW" or "WHY" → They want PROCEDURES/GUIDELINES/EXPLANATIONS
 
-8. VERIFY BEFORE ANSWERING: 
-   - Does your answer match what the user actually asked?
-   - Did you cite sources for every major claim?
-   - Did you include the References section?
+**7. ALWAYS CITE SOURCES**
+- After every factual claim, add reference in parentheses
+- Local sources: (see [document title])
+- Web sources: (Source: [title], [URL])
+- End with: "References: [list all sources]"
+
+=== RESPONSE STRUCTURE ===
+1. Restate intent briefly
+2. Direct answer (or admission if not in sources)
+3. Explanation with inline citations
+4. Note any limits
+5. References section
 
 ===== CONTEXT =====
 {context}
@@ -884,7 +974,7 @@ CRITICAL INSTRUCTIONS - You MUST follow these rules:
 
 User Question: {query}
 
-Answer (directly address what the user asked, cite sources inline, end with References section):"""
+Answer (interpret intent, ground in context, cite sources, end with References):"""
 
                 response = await asyncio.to_thread(
                     self.llm.invoke,

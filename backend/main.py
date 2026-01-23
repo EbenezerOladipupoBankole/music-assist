@@ -85,6 +85,8 @@ class ChatResponse(BaseModel):
     sources: List[dict]
     conversation_id: str
     timestamp: str
+    confidence: Optional[str] = None
+    search_method: Optional[str] = None
 
 class HealthResponse(BaseModel):
     status: str
@@ -187,7 +189,9 @@ async def chat(message: ChatMessage):
             response=result["answer"],
             sources=result["sources"],
             conversation_id=result["conversation_id"],
-            timestamp=datetime.utcnow().isoformat()
+            timestamp=datetime.utcnow().isoformat(),
+            confidence=result.get("confidence"),
+            search_method=result.get("search_method")
         )
         
     except Exception as e:
