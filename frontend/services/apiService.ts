@@ -4,12 +4,11 @@ import { Message, Source } from "../types.ts";
  * MUSIC-ASSIST API SERVICE.
  * Connects to the backend API using the URL from environment variables.
  */
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 let API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Safety check: If the URL is the placeholder (from the template) or missing, default to localhost
 if (!API_BASE_URL || API_BASE_URL.includes('random-hash')) {
-  API_BASE_URL = 'http://localhost:8080';
+  API_BASE_URL = 'https://music-assist-backend-158647252148.us-central1.run.app';
 }
 
 interface BackendChatResponse {

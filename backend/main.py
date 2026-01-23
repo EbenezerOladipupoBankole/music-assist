@@ -87,7 +87,8 @@ origins = [
     "http://localhost:3000",
     "http://localhost:8080",
     "https://music-assits.web.app",
-    "https://music-assits.firebaseapp.com"
+    "https://music-assits.firebaseapp.com",
+    "https://music-assist-backend-158647252148.us-central1.run.app",
 ]
 
 # CORS configuration for Firebase frontend
