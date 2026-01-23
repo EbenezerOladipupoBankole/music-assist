@@ -50,6 +50,7 @@ from langchain_core.runnables import RunnablePassthrough
 
 # Import web search capabilities
 from web_search import ChurchMusicWebSearch, is_music_related_question
+from firebase_memory import FirebaseConversationMemory
 
 
 class RAGPipeline:
@@ -127,7 +128,8 @@ class RAGPipeline:
         
         self.vector_store = None
         self.qa_chain = None
-        self.conversations = {}
+        self.memory = None # Conversation memory
+        self._local_conversations = set() # Track active convos for stats
         
         # Initialize web search
         self.web_searcher = ChurchMusicWebSearch()
@@ -170,6 +172,10 @@ class RAGPipeline:
             # Initialize QA chain (if vector store available)
             if self.vector_store:
                 self._initialize_qa_chain()
+
+            # Initialize conversation memory
+            if not self.memory:
+                self.memory = FirebaseConversationMemory()
             
         except Exception as e:
             print(f"Error initializing RAG pipeline: {e}")
@@ -394,17 +400,15 @@ Answer (interpret intent, ground in context, cite sources, end with References):
             if not conversation_id:
                 conversation_id = f"conv_{datetime.utcnow().timestamp()}"
             
-            # Get or create conversation history
-            if conversation_id not in self.conversations:
-                self.conversations[conversation_id] = []
+            self._local_conversations.add(conversation_id)
             
             # Extract music-specific context (hymn numbers, terminology)
             music_context = self._extract_music_context(query)
             if music_context:
                 logger.info(f"Detected music context: {music_context}")
             
-            # Get conversation history for context
-            conversation_history = self._format_conversation_history(conversation_id)
+            # Get conversation history for context from Firebase/memory
+            conversation_history_str = await self._get_formatted_conversation_history(conversation_id)
             
             # STEP 2: Try local vector store first
             search_start = time.time()
@@ -432,7 +436,7 @@ Answer (interpret intent, ground in context, cite sources, end with References):
             
             # STEP 5: Generate answer with combined context
             gen_start = time.time()
-            result = await self._generate_answer(query, combined_context, conversation_history)
+            result = await self._generate_answer(query, combined_context, conversation_history_str)
             metrics['generation_time_ms'] = int((time.time() - gen_start) * 1000)
             
             # STEP 5.5: Add confidence disclaimer if needed
@@ -442,7 +446,7 @@ Answer (interpret intent, ground in context, cite sources, end with References):
                 result = self._add_confidence_disclaimer(result, "medium", web_results)
             
             # Estimate tokens and cost
-            input_text = combined_context + query + conversation_history
+            input_text = combined_context + query + conversation_history_str
             output_text = result
             metrics['input_tokens_estimated'] = int(len(input_text.split()) * 1.3)
             metrics['output_tokens_estimated'] = int(len(output_text.split()) * 1.3)
@@ -462,16 +466,8 @@ Answer (interpret intent, ground in context, cite sources, end with References):
             else:
                 search_method = "local only"
             
-            # STEP 6: Faithfulness verification - log low-confidence responses for review
-            if confidence_level == "low":
-                logger.warning(f"LOW CONFIDENCE RESPONSE - Query: {query[:100]}... | Sources: {metrics['local_docs_count']} local, {metrics['web_results_count']} web")
-            
-            # Update conversation history
-            self.conversations[conversation_id].append((query, result))
-            
-            # Keep only last N exchanges to manage memory
-            if len(self.conversations[conversation_id]) > CONFIG['MAX_CONVERSATION_HISTORY']:
-                self.conversations[conversation_id] = self.conversations[conversation_id][-CONFIG['MAX_CONVERSATION_HISTORY']:]
+            # Update conversation history in Firestore
+            await asyncio.to_thread(self.memory.add_message, conversation_id, query, result)
             
             # Calculate total response time
             response_time_ms = int((time.time() - start_time) * 1000)
@@ -494,7 +490,7 @@ Answer (interpret intent, ground in context, cite sources, end with References):
                     "output_tokens_estimated": metrics['output_tokens_estimated'],
                     "cost_usd": metrics['cost_usd'],
                     "confidence_level": confidence_level,
-                    "conversation_length": len(self.conversations.get(conversation_id, [])),
+                    "conversation_length": len(conversation_history_str.split('\n\n')) if conversation_history_str else 1,
                     "timestamp": datetime.utcnow().isoformat()
                 }
             }
@@ -516,6 +512,12 @@ Answer (interpret intent, ground in context, cite sources, end with References):
         Args:
             documents: List of dicts with 'content' and 'metadata' keys
         """
+        # In a containerized/serverless environment, the filesystem is often read-only.
+        # This check prevents attempts to write to it at runtime.
+        if os.getenv("ENVIRONMENT") == "production":
+            logger.warning("Cannot add documents in a read-only production environment.")
+            raise PermissionError("The knowledge base cannot be modified at runtime in this environment.")
+
         try:
             # Convert to LangChain Document objects
             docs = []
@@ -556,6 +558,10 @@ Answer (interpret intent, ground in context, cite sources, end with References):
         """
         Rebuild vector store from crawled documents
         """
+        if os.getenv("ENVIRONMENT") == "production":
+            logger.warning("Cannot rebuild vector store in a read-only production environment.")
+            raise PermissionError("The knowledge base cannot be modified at runtime in this environment.")
+
         try:
             crawled_dir = "./data/crawled"
             
@@ -601,7 +607,7 @@ Answer (interpret intent, ground in context, cite sources, end with References):
             stats = {
                 "status": "healthy" if self.vector_store is not None else "degraded",
                 "vector_store_exists": self.vector_store is not None,
-                "active_conversations": len(self.conversations),
+                "active_conversations_in_session": len(self._local_conversations),
                 "model": self.model_name,
                 "configuration": {
                     "chunk_size": self.chunk_size,
@@ -1087,16 +1093,17 @@ Answer (interpret intent, ground in context, cite sources, end with References):
         
         return query
     
-    def _format_conversation_history(self, conversation_id: str, max_exchanges: int = 3) -> str:
+    async def _get_formatted_conversation_history(self, conversation_id: str, max_exchanges: int = 3) -> str:
         """Format recent conversation history for context."""
-        if conversation_id not in self.conversations:
+        if not self.memory:
             return ""
         
-        history = self.conversations[conversation_id]
+        # Fetch history from Firestore/memory in a non-blocking way
+        history = await asyncio.to_thread(self.memory.get_history, conversation_id)
         if not history:
             return ""
         
-        # Get last N exchanges
+        # Get last N exchanges (history from memory is already ordered and limited)
         recent = history[-max_exchanges:]
         
         formatted = []

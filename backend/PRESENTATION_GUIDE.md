@@ -124,7 +124,7 @@ Per Query: $0.0014 average
 ### **Step 4: Show Live Query** (2 min)
 ```bash
 # If server running:
-curl -X POST http://localhost:8080/api/chat \
+curl -X POST http://localhost:8080/chat \
   -d '{"message": "What is a major chord?"}'
 ```
 

@@ -1,34 +1,12 @@
 {
-  "total_documents": 65,
+  "total_documents": 81,
   "pages_visited": 100,
-  "elapsed_seconds": 565.9946057796478,
-  "timestamp": "2026-01-19T16:53:19.233300",
+  "elapsed_seconds": 165.8570716381073,
+  "timestamp": "2026-01-23T08:24:24.438669",
   "start_urls": [
     "https://www.churchofjesuschrist.org/media/music?lang=eng",
-    "https://www.churchofjesuschrist.org/music/library/hymns?lang=eng",
     "https://www.churchofjesuschrist.org/initiative/new-hymns?lang=eng",
-    "https://www.churchofjesuschrist.org/media/music/archived-content?lang=eng",
     "https://www.churchofjesuschrist.org/callings/music/common-questions-about-music-in-church-meetings?lang=eng",
-    "https://www.churchofjesuschrist.org/study/handbooks-and-callings/ward-or-branch-callings/music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/manual/general-handbook/19-music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/manual/general-handbook/38-church-policies-and-guidelines?lang=eng",
-    "https://www.churchofjesuschrist.org/media/music/tabernacle-choir?lang=eng",
-    "https://www.thetabernaclechoir.org/about.html",
-    "https://www.thetabernaclechoir.org/about/conductors.html",
-    "https://www.churchofjesuschrist.org/study/ensign/topics/tabernacle-choir-at-temple-square?lang=eng",
-    "https://www.churchofjesuschrist.org/study/friend/topics/tabernacle-choir?lang=eng",
-    "https://www.churchofjesuschrist.org/study/music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/manual/conducting-course?lang=eng",
-    "https://www.churchofjesuschrist.org/music/resources?lang=eng",
-    "https://www.churchofjesuschrist.org/music/text/childrens-songbook?lang=eng",
-    "https://www.churchofjesuschrist.org/children/resources/music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/ensign/topics/music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/ensign/topics/hymns?lang=eng",
-    "https://www.churchofjesuschrist.org/study/ensign/topics/choirs?lang=eng",
-    "https://www.churchofjesuschrist.org/study/liahona/topics/music?lang=eng",
-    "https://www.churchofjesuschrist.org/callings/music?lang=eng",
-    "https://www.churchofjesuschrist.org/study/manual/music-callings?lang=eng",
-    "https://www.churchofjesuschrist.org/study/ensign/topics/composers?lang=eng",
-    "https://www.churchofjesuschrist.org/music/library/composers?lang=eng"
+    "https://www.churchofjesuschrist.org/study/handbooks-and-callings/ward-or-branch-callings/music?lang=eng"
   ]
 }
