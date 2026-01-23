@@ -14,6 +14,8 @@ from dotenv import load_dotenv
 import sys
 import re
 import random
+import firebase_admin
+from firebase_admin import credentials
 
 # Add current directory to path to ensure local imports (like rag_pipeline) work
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -55,6 +57,21 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"[WARNING] Could not initialize HymnPlayer: {e}")
 
+    # Initialize Firebase Admin
+    try:
+        if not firebase_admin._apps:
+            cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+            if cred_path and os.path.exists(cred_path):
+                cred = credentials.Certificate(cred_path)
+                firebase_admin.initialize_app(cred)
+                print("[OK] Firebase Admin initialized successfully (Local Key)")
+            else:
+                # Fallback to Application Default Credentials (for Cloud Run)
+                firebase_admin.initialize_app()
+                print("[OK] Firebase Admin initialized successfully (ADC)")
+    except Exception as e:
+        print(f"[WARNING] Firebase Admin failed to initialize: {e}. Firebase features disabled.")
+
     yield
 
 # Initialize FastAPI app
@@ -65,10 +82,18 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Define allowed origins
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "https://music-assits.web.app",
+    "https://music-assits.firebaseapp.com"
+]
+
 # CORS configuration for Firebase frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure with your Firebase domain in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

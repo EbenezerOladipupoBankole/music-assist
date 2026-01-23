@@ -28,14 +28,12 @@ class FirebaseConversationMemory:
     def __init__(self):
         self.db = None
         try:
-            # GOOGLE_APPLICATION_CREDENTIALS should be set in the environment
-            if os.getenv("GOOGLE_APPLICATION_CREDENTIALS") and not firebase_admin._apps:
-                cred = credentials.ApplicationDefault()
-                firebase_admin.initialize_app(cred)
-                self.db = firestore.client()
-                logger.info("✅ Firebase Firestore initialized successfully for conversation memory.")
-            else:
-                raise ValueError("GOOGLE_APPLICATION_CREDENTIALS not set or Firebase already initialized.")
+            # Ensure app is initialized (should be done by main.py)
+            if not firebase_admin._apps:
+                firebase_admin.initialize_app()
+            
+            self.db = firestore.client()
+            logger.info("✅ Firebase Firestore initialized successfully for conversation memory.")
         except Exception as e:
             logger.warning(f"🔥 Firebase initialization failed: {e}")
             logger.warning("Conversation memory will be IN-MEMORY ONLY.")
