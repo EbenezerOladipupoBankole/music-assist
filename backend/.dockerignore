@@ -1,7 +1,11 @@
-venv/
-__pycache__/
-.git/
-.pytest_cache/
-*.pyc
+.git
+.gitignore
+__pycache__
+venv
 .env
-.DS_Store
+.env.local
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.vscode

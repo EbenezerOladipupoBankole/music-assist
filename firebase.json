@@ -8,8 +8,32 @@
     ],
     "rewrites": [
       {
+        "source": "/chat",
+        "run": {
+          "serviceId": "music-assist",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/health",
+        "run": {
+          "serviceId": "music-assist",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/stats",
+        "run": {
+          "serviceId": "music-assist",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "/api/**",
-        "function": "api"
+        "run": {
+          "serviceId": "music-assist",
+          "region": "us-central1"
+        }
       },
       {
         "source": "**",

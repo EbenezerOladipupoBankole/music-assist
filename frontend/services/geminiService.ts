@@ -12,7 +12,7 @@ export class GeminiService {
   async sendMessage(prompt: string, history: Message[] = []) {
     try {
       // Initialize the SDK with the environment API key as per guidelines
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
 
       // Transform history to Gemini format (user/model roles)
       const contents = history.map(msg => ({

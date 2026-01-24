@@ -6,9 +6,11 @@ import { Message, Source } from "../types.ts";
  */
 let API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+// Force connection to local backend to resolve "Cannot connect" error
+API_BASE_URL = 'http://127.0.0.1:8080';
 // Safety check: If the URL is the placeholder (from the template) or missing, default to localhost
-if (!API_BASE_URL || API_BASE_URL.includes('random-hash')) {
-  API_BASE_URL = 'https://music-assist-backend-158647252148.us-central1.run.app';
+if (!API_BASE_URL || API_BASE_URL.includes('random-hash') || API_BASE_URL === undefined) {
+  API_BASE_URL = 'http://127.0.0.1:8080';
 }
 
 interface BackendChatResponse {

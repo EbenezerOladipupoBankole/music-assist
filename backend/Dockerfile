@@ -1,27 +1,21 @@
-# Use official Python runtime as a parent image
-FROM python:3.9-slim
+# Use official Python image
+FROM python:3.11-slim
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
-
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Install system dependencies required for building Python packages
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libxml2-dev \
-    libxslt-dev \
-    python3-dev \
-    && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
+# This includes the 'data' folder with your vector store
 COPY . .
 
-# Run the application on port 8080 (Cloud Run default)
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
+# Set environment variables
+ENV ENVIRONMENT=production
+ENV PORT=8080
+
+# Run the web service on container startup
+# Host 0.0.0.0 is required for Cloud Run
+CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT}

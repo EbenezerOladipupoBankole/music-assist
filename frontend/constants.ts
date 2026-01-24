@@ -25,4 +25,7 @@ export const REFERENCE_LINKS = [
   { name: 'Conducting Techniques', url: 'https://www.churchofjesuschrist.org/study/manual/conducting-course' }
 ];
 
-
+export const API_BASE_URL = typeof window !== 'undefined' && 
+  (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+    ? '' // In production, use relative paths (handled by Firebase rewrites)
+    : 'http://127.0.0.1:8080'; // In local development, point to the backend server

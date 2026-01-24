@@ -85,9 +85,11 @@ app = FastAPI(
 # Define allowed origins
 origins = [
     "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "http://localhost:8080",
-    "https://music-assits.web.app",
-    "https://music-assits.firebaseapp.com",
+    "https://music-assists.web.app",
+    "https://music-assists.firebaseapp.com",
     "https://music-assist-backend-158647252148.us-central1.run.app",
 ]
 

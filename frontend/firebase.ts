@@ -1,18 +1,22 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
+// https://firebase.google.com/docs/web/setup#available-libraries
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCMc7ykXvWixIfE6QxkSSBgmqIyneotEaU",
-  authDomain: "music-assits.firebaseapp.com",
-  projectId: "music-assits",
-  storageBucket: "music-assits.firebasestorage.app",
-  messagingSenderId: "158647252148",
-  appId: "1:158647252148:web:ae8654dec0acbcfa0293e1"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// Initialize and export Firebase Authentication for use in your app
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export default app;

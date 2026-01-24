@@ -90,8 +90,8 @@ source venv/bin/activate  # macOS/Linux
 # Start server
 python -m uvicorn main:app --reload --port 8080
 ```
-*The server will start at `http://127.0.0.1:8000`*
-*API docs available at `http://127.0.0.1:8000/docs`*
+*The server will start at `http://127.0.0.1:8080`*
+*API docs available at `http://127.0.0.1:8080/docs`*
 
 ### Step 3: Chat with the Bot (Optional)
 Open a **new** terminal window (keep the server running in the first one) and run the chat script:
