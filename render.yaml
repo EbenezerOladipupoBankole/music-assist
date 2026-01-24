@@ -16,12 +16,12 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         fromService:
-          type: static
+          type: site
           name: music-assist-frontend
           property: url
 
   # 2. The Frontend (React/Vite)
-  - type: static
+  - type: site
     name: music-assist-frontend
     env: static
     region: oregon
