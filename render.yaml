@@ -2,7 +2,7 @@ services:
   # 1. The FastAPI Backend
   - type: web
     name: music-assist-backend
-    env: python
+    runtime: python
     region: oregon
     plan: free
     buildCommand: cd backend && pip install -r requirements.txt
@@ -16,14 +16,14 @@ services:
         value: production
       - key: ALLOWED_ORIGINS
         fromService:
-          type: site
+          type: web
           name: music-assist-frontend
           property: url
 
   # 2. The Frontend (React/Vite)
-  - type: site
+  - type: web
     name: music-assist-frontend
-    env: static
+    runtime: static
     region: oregon
     plan: free
     buildCommand: cd frontend && npm install && npm run build
