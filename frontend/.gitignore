@@ -1,4 +1,26 @@
-# Environment variables
+# Environment Variables (Keep these local)
 .env
-.env.*
-*.local
+.env.local
+.env.*.local
+
+# Allow example files
+!.env.example
+
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.py[cod]
+
+# Build Outputs
+dist/
+build/
+
+# Firebase
+.firebase/
+firebase-debug.log*
+
+# System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
