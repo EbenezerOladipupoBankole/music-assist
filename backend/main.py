@@ -93,6 +93,11 @@ origins = [
     "https://music-assist-backend-158647252148.us-central1.run.app",
 ]
 
+# Add origins from environment variable (for deployment)
+env_origins = os.getenv("ALLOWED_ORIGINS")
+if env_origins:
+    origins.extend([o.strip() for o in env_origins.split(",")])
+
 # CORS configuration for Firebase frontend
 app.add_middleware(
     CORSMiddleware,
