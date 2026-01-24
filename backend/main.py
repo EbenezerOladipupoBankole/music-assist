@@ -96,7 +96,12 @@ origins = [
 # Add origins from environment variable (for deployment)
 env_origins = os.getenv("ALLOWED_ORIGINS")
 if env_origins:
-    origins.extend([o.strip() for o in env_origins.split(",")])
+    for o in env_origins.split(","):
+        o = o.strip()
+        origins.append(o)
+        # If the origin comes from Render's 'host' property, it lacks the scheme.
+        if not o.startswith("http"):
+            origins.append(f"https://{o}")
 
 # CORS configuration for Firebase frontend
 app.add_middleware(

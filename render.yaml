@@ -18,13 +18,12 @@ services:
         fromService:
           type: web
           name: music-assist-frontend
-          property: url
+          property: host
 
   # 2. The Frontend (React/Vite)
   - type: web
     name: music-assist-frontend
     runtime: static
-    region: oregon
     plan: free
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
@@ -33,4 +32,4 @@ services:
         fromService:
           type: web
           name: music-assist-backend
-          property: url
+          property: host
