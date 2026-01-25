@@ -1,89 +1,31 @@
-import { Message, Source } from "../types.ts";
+import { Message } from '../types';
 
-/**
- * MUSIC-ASSIST API SERVICE.
- * Connects to the backend API using the URL from environment variables.
- */
-let API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+// TODO: Replace this URL with your actual Render Backend URL
+// Example: "https://music-assist-backend.onrender.com"
+const API_BASE_URL = "https://music-assist-backend.onrender.com";
 
-// Force connection to local backend to resolve "Cannot connect" error
-API_BASE_URL = 'http://127.0.0.1:8080';
-// Safety check: If the URL is the placeholder (from the template) or missing, default to localhost
-if (!API_BASE_URL || API_BASE_URL.includes('random-hash') || API_BASE_URL === undefined) {
-  API_BASE_URL = 'http://127.0.0.1:8080';
-}
-
-interface BackendChatResponse {
-  response: string;
-  sources: Array<{
-    type: 'local' | 'web';
-    title: string;
-    source: string;
-    url?: string;
-  }>;
-  conversation_id: string;
-  timestamp: string;
-}
-
-export class MusicAssistService {
-  private conversationId: string | null = null;
-
-  async sendMessage(
-    prompt: string,
-    history: Message[],
-    conversationId?: string | null
-  ): Promise<{ text: string; sources: Source[]; conversationId: string }> {
+export const musicAssistApi = {
+  sendMessage: async (text: string, history: Message[]) => {
     try {
-      const currentConversationId = conversationId || this.conversationId;
-
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: prompt,
-          conversation_id: currentConversationId,
-          user_id: null
-        })
+          message: text,
+          history: history
+        }),
       });
 
       if (!response.ok) {
-        if (response.status === 503) {
-          throw new Error("RAG pipeline not initialized. Please contact administrator.");
-        }
-        throw new Error(`Backend error: ${response.status} ${response.statusText}`);
+        throw new Error(`Server responded with ${response.status}`);
       }
 
-      const data: BackendChatResponse = await response.json();
-
-      if (!data || typeof data.response !== 'string') {
-        console.error("Invalid response structure from backend:", data);
-        throw new Error("Received an invalid response from the backend service.");
-      }
-
-      this.conversationId = data.conversation_id;
-
-      const mappedSources: Source[] = (data.sources || []).map(source => ({
-        title: source.title || source.source,
-        url: source.url || source.source
-      }));
-
-      return {
-        text: data.response,
-        sources: mappedSources,
-        conversationId: data.conversation_id,
-      };
+      return await response.json();
     } catch (error) {
-      console.error("Music-Assist API Error:", error);
-      
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error(`Cannot connect to the backend at ${API_BASE_URL}. Please ensure the server is running and accessible.`);
-      }
-      
+      console.error("API Error:", error);
       throw error;
     }
   }
-}
-
-export const musicAssistApi = new MusicAssistService();
+};
