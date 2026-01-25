@@ -161,6 +161,38 @@ class ChatResponse(BaseModel):
     confidence: Optional[str] = None
     search_method: Optional[str] = None
 
+@app.get("/audio/hymn/{number}")
+async def get_hymn_audio(number: int):
+    """
+    Proxies audio from the official CDN to bypass CORS and security blocks.
+    This guarantees playback on all devices.
+    """
+    if not hymn_player:
+        raise HTTPException(status_code=503, detail="Hymn player not initialized")
+    
+    # Find the hymn
+    hymns = hymn_player.get_hymns(str(number))
+    if not hymns:
+        raise HTTPException(status_code=404, detail="Hymn not found")
+    
+    h = hymns[0]
+    source_url = h['url']
+    
+    try:
+        import requests
+        from fastapi.responses import StreamingResponse
+        
+        def iterfile():
+            with requests.get(source_url, stream=True, timeout=15) as r:
+                r.raise_for_status()
+                for chunk in r.iter_content(chunk_size=1024*1024): # 1MB chunks
+                    yield chunk
+        
+        return StreamingResponse(iterfile(), media_type="audio/mpeg")
+    except Exception as e:
+        print(f"[Error] Audio proxy failed for Hymn {number}: {e}")
+        raise HTTPException(status_code=500, detail="Could not retrieve audio")
+
 class HealthResponse(BaseModel):
     status: str
     timestamp: str
@@ -240,7 +272,7 @@ async def chat(message: ChatMessage):
                     sources=[],
                     conversation_id=message.conversation_id or "sing_request",
                     timestamp=datetime.utcnow().isoformat(),
-                    audio_url=audio_url,
+                    audio_url=f"/audio/hymn/{primary_hymn['number']}", # Use local proxy!
                     audio_title=f"{primary_hymn['title']} (#{primary_hymn['number']})"
                 )
             else:

@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender } from '../types.ts';
+import { API_BASE_URL } from '../constants.ts';
 
 interface ChatMessageProps {
   message: Message;
@@ -10,6 +11,8 @@ const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const fullUrl = url.startsWith('/') ? `${API_BASE_URL}${url}` : url;
 
   const togglePlay = async () => {
     if (audioRef.current) {
@@ -47,7 +50,7 @@ const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
     <div className="mt-4 p-4 bg-teal-50 border-l-4 border-teal-500 rounded-r-xl shadow-inner relative overflow-hidden group select-none">
       <audio
         ref={audioRef}
-        src={url}
+        src={fullUrl}
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded}
         preload="auto"
