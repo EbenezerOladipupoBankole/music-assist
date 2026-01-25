@@ -24,7 +24,12 @@ services:
   - type: web
     name: music-assist-frontend
     runtime: static
-    buildCommand: cd frontend && npm install && npm run build
+    buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    envVars:
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=512
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
