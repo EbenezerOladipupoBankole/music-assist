@@ -437,7 +437,8 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
                     "cost_usd": metrics['cost_usd'],
                     "confidence_level": confidence_level,
                     "conversation_length": len(conversation_history_str.split('\n\n')) if conversation_history_str else 1,
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "index_refreshed": True # Knowledge base refreshed with Golden Facts
                 }
             }
             
