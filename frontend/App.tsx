@@ -171,6 +171,7 @@ const App: React.FC = () => {
 
       setMessages(prev => [...prev, aiMsg]);
       setStatusText('Consultation complete');
+      if (user) fetchHistory(user.uid);
     } catch (error) {
       console.error("App: Service Error", error);
 

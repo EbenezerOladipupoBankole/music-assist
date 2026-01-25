@@ -98,20 +98,30 @@ class FirebaseConversationMemory:
             return []
 
         try:
+            # We remove order_by from the server-side query to avoid requiring 
+            # a composite index (user_id + last_updated), which is a common failure point.
+            # We limit to 50 and then sort in-memory.
             docs = self.db.collection('conversations') \
                 .where('user_id', '==', user_id) \
-                .order_by('last_updated', direction=firestore.Query.DESCENDING) \
-                .limit(20) \
+                .limit(50) \
                 .stream()
 
-            return [
-                {
+            conversations = []
+            for doc in docs:
+                data = doc.to_dict()
+                conversations.append({
                     "id": doc.id,
-                    "title": doc.to_dict().get('title', 'Untitled Consultation'),
-                    "last_updated": doc.to_dict().get('last_updated')
-                }
-                for doc in docs
-            ]
+                    "title": data.get('title', 'Untitled Consultation'),
+                    "last_updated": data.get('last_updated')
+                })
+
+            # Sort in-memory instead (DESCENDING)
+            conversations.sort(
+                key=lambda x: (x['last_updated'].timestamp() if hasattr(x['last_updated'], 'timestamp') else 0), 
+                reverse=True
+            )
+
+            return conversations[:20] # Return top 20
         except Exception as e:
             logger.error(f"Error fetching user conversations for {user_id}: {e}")
             return []
