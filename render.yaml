@@ -32,3 +32,15 @@ services:
           type: web
           name: music-assist-backend
           property: host
+      - key: VITE_FIREBASE_API_KEY
+        value: AIzaSyDe6oPQht4Fl5iWcoZhVaDIxkuaqCwAky8
+      - key: VITE_FIREBASE_AUTH_DOMAIN
+        value: music-assists.firebaseapp.com
+      - key: VITE_FIREBASE_PROJECT_ID
+        value: music-assists
+      - key: VITE_FIREBASE_STORAGE_BUCKET
+        value: music-assists.firebasestorage.app
+      - key: VITE_FIREBASE_MESSAGING_SENDER_ID
+        value: 276698594895
+      - key: VITE_FIREBASE_APP_ID
+        value: 
