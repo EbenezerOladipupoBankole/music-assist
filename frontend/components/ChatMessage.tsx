@@ -158,7 +158,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-all text-[11px] font-medium text-slate-600 hover:text-teal-900 group"
                 >
                   <svg className="w-3 h-3 text-slate-400 group-hover:text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                  <span>{source.title.split('–')[0].trim()}</span>
+                  <span>{source.title === 'Unknown' ? 'Official Recording' : source.title.split('–')[0].trim()}</span>
                 </a>
               ))}
             </div>
