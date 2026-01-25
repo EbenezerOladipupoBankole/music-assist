@@ -182,37 +182,54 @@ async def chat(message: ChatMessage):
         # 1. Check for Hymn/Singing Request
         user_msg = message.message.lower().strip()
         
-        # Look for "sing" or "play" followed by optional text
-        sing_match = re.search(r'\b(sing|play)\b\s*(.*)', user_msg)
+        # Look for "sing", "play", "listen to", "hear" followed by optional text
+        sing_match = re.search(r'\b(sing|play|listen|hear)\b\s*(.*)', user_msg)
         
-        # Relaxed check to include "yes", "ok", or if the keyword is early in the sentence
+        # Liberal check for intent
         is_request = (
-            user_msg.startswith(("sing", "play", "can you", "could you", "please", "yes", "ok", "sure")) 
-            or (sing_match and sing_match.start() < 10)
+            user_msg.startswith(("sing", "play", "listen", "hear", "can you", "could you", "please", "yes", "ok", "sure")) 
+            or (sing_match and sing_match.start() < 15)
         )
 
-        if hymn_player and sing_match and is_request:
-            query = sing_match.group(2).strip()
+        if hymn_player and is_request and (sing_match or "hymn" in user_msg or "song" in user_msg):
+            query = sing_match.group(2).strip() if sing_match else user_msg
+            
+            # Remove filler words
+            query = re.sub(r'\b(me|to|a|the|hymn|song|number)\b', '', query).strip()
             
             # 1. Try to find specific hymns first
             hymns = hymn_player.get_hymns(query)
             
-            # 2. If no specific hymns found, check for generic request or empty query
-            # We check for keywords that imply "pick one for me"
-            is_generic = any(w in query.lower() for w in ["one", "any", "random", "something", "list", "song", "hymn"])
+            # 2. If no specific hymns found, check for generic request
+            is_generic = any(w in query.lower() for w in ["one", "any", "random", "something", "list", "song", "hymn"]) or not query
             
-            if not hymns and (not query or is_generic):
-                random_title = random.choice(hymn_player.known_hymns)
-                hymns = hymn_player.get_hymns(random_title)
+            if not hymns and is_generic:
+                random_hymn = random.choice(hymn_player.hymns_db)
+                hymns = [random_hymn]
             
             if hymns:
-                # Build HTML response for one or multiple hymns
                 if len(hymns) == 1:
-                    response_text = f"I can help with that! Here is the official recording for '{hymns[0]['title']}':<br><br><audio controls src=\"{hymns[0]['url']}\"></audio>"
+                    h = hymns[0]
+                    response_text = (
+                        f"<div class='musical-response p-4 border-l-4 border-teal-500 bg-slate-50/50 rounded-r-xl mt-2 mb-4'>"
+                        f"<div class='flex items-center gap-2 mb-2'>"
+                        f"<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='text-teal-600'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg>"
+                        f"<span class='text-xs font-black uppercase tracking-widest text-teal-700'>Now Performing</span>"
+                        f"</div>"
+                        f"<p class='font-serif text-lg mb-4 text-slate-900 italic'>\"{h['title']}\" — Hymn #{h['number']}</p>"
+                        f"<audio controls class='w-full h-10 border-2 border-slate-100 rounded-lg shadow-sm' src=\"{h['url']}\"></audio>"
+                        f"</div>"
+                    )
                 else:
-                    response_text = "I found the following hymns for you:<br>"
+                    response_text = "<div class='mb-4'><p class='mb-4'>I found multiple hymns matching your request. Which one would you like to hear?</p>"
                     for h in hymns:
-                        response_text += f"<br><strong>{h['title']}</strong><br><audio controls src=\"{h['url']}\"></audio><br>"
+                        response_text += (
+                            f"<div class='mb-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30'>"
+                            f"<p class='font-serif font-bold text-slate-800 mb-2'>\"{h['title']}\" (#{h.get('number', '?')})</p>"
+                            f"<audio controls class='w-full h-8' src=\"{h['url']}\"></audio>"
+                            f"</div>"
+                        )
+                    response_text += "</div>"
 
                 return ChatResponse(
                     response=response_text,
@@ -222,7 +239,7 @@ async def chat(message: ChatMessage):
                 )
             else:
                 return ChatResponse(
-                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current list of playable hymns includes: {', '.join(hymn_player.known_hymns)}.",
+                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current list of playable hymns includes: {', '.join(hymn_player.known_hymns[:10])}...",
                     sources=[],
                     conversation_id=message.conversation_id or "sing_request_failed",
                     timestamp=datetime.utcnow().isoformat(),

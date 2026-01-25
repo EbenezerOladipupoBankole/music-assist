@@ -54,9 +54,19 @@ class HymnPlayer:
                 "url": "https://media2.ldscdn.org/assets/music/hymns/2019-01-0350-for-the-strength-of-the-hills-vocal-mp3-eng.mp3"
             },
             {
+                "title": "Lead, Kindly Light",
+                "number": 97,
+                "url": "https://media2.ldscdn.org/assets/music/hymns/2019-01-0970-lead-kindly-light-vocal-mp3-eng.mp3"
+            },
+            {
                 "title": "I Know That My Redeemer Lives",
                 "number": 136,
                 "url": "https://media2.ldscdn.org/assets/music/hymns/2019-01-1360-i-know-that-my-redeemer-lives-vocal-mp3-eng.mp3"
+            },
+            {
+                "title": "How Firm a Foundation",
+                "number": 85,
+                "url": "https://media2.ldscdn.org/assets/music/hymns/2019-01-0850-how-firm-a-foundation-vocal-mp3-eng.mp3"
             },
             {
                 "title": "I Am a Child of God",
@@ -83,11 +93,11 @@ class HymnPlayer:
         if not query:
             return []
             
-        query = query.lower().strip()
+        clean_query = query.lower().strip()
         results = []
         
         # 1. Check for exact number match
-        number_match = re.search(r'\b(\d{1,3})\b', query)
+        number_match = re.search(r'\b(\d{1,3})\b', clean_query)
         if number_match:
             num = int(number_match.group(1))
             for h in self.hymns_db:
@@ -96,7 +106,7 @@ class HymnPlayer:
         
         # 2. Check for title match (substring)
         for h in self.hymns_db:
-            if query in h["title"].lower():
+            if clean_query in h["title"].lower():
                 if h not in results:
                     results.append(h)
                     
