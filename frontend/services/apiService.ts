@@ -1,12 +1,5 @@
 import { Message } from '../types';
-
-// Use environment variable for API URL or default to localhost for development
-let envUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-// Ensure protocol is present for production URLs provided by Render
-if (envUrl && !envUrl.startsWith('http') && !envUrl.includes('localhost')) {
-  envUrl = `https://${envUrl}`;
-}
-const API_BASE_URL = envUrl;
+import { API_BASE_URL } from '../constants.ts';
 
 export const musicAssistApi = {
   sendMessage: async (text: string, history: Message[]) => {

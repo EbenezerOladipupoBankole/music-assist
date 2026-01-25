@@ -111,14 +111,22 @@ if os.getenv("ENVIRONMENT") == "production":
     pass # Middleware handles the list below
 
 # CORS configuration
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins + ["https://*.onrender.com"],
-    allow_origin_regex="https://.*\.onrender\.com", # RegEx to allow any Render site
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+if os.getenv("ENVIRONMENT") == "production":
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex="https://.*\.onrender\.com",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Pydantic models
 class ChatMessage(BaseModel):
