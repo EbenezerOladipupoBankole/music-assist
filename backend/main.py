@@ -98,15 +98,23 @@ env_origins = os.getenv("ALLOWED_ORIGINS")
 if env_origins:
     for o in env_origins.split(","):
         o = o.strip()
+        if not o: continue
         origins.append(o)
-        # If the origin comes from Render's 'host' property, it lacks the scheme.
         if not o.startswith("http"):
             origins.append(f"https://{o}")
+            origins.append(f"http://{o}")
 
-# CORS configuration for Firebase frontend
+# Safety: Add a broad match for onrender.com subdomains since hostnames can be tricky
+# We use a pattern to check at runtime or just add common variants
+if os.getenv("ENVIRONMENT") == "production":
+    # This allows any frontend on Render to connect to this API
+    pass # Middleware handles the list below
+
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins + ["https://*.onrender.com"],
+    allow_origin_regex="https://.*\.onrender\.com", # RegEx to allow any Render site
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
