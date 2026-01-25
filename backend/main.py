@@ -60,13 +60,21 @@ async def lifespan(app: FastAPI):
     # Initialize Firebase Admin
     try:
         if not firebase_admin._apps:
-            cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-            if cred_path and os.path.exists(cred_path):
+            firebase_json = os.getenv("FIREBASE_CONFIG_JSON")
+            cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./firebase-key.json")
+            
+            if firebase_json:
+                import json
+                cred_dict = json.loads(firebase_json)
+                cred = credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred)
+                print("[OK] Firebase Admin initialized successfully (from Environment Variable)")
+            elif os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)
                 firebase_admin.initialize_app(cred)
-                print("[OK] Firebase Admin initialized successfully (Local Key)")
+                print(f"[OK] Firebase Admin initialized successfully (Local Key: {cred_path})")
             else:
-                # Fallback to Application Default Credentials (for Cloud Run)
+                # Fallback to Application Default Credentials
                 firebase_admin.initialize_app()
                 print("[OK] Firebase Admin initialized successfully (ADC)")
     except Exception as e:
