@@ -62,10 +62,12 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   }, [input]);
 
   return (
-    <form onSubmit={handleSubmit} className="relative group">
-      <div className="absolute -inset-1 bg-gradient-to-r from-teal-600/20 to-amber-600/20 rounded-[2.5rem] blur opacity-25 group-focus-within:opacity-100 transition duration-1000"></div>
-      
-      <div className="relative flex flex-col bg-white rounded-[2rem] border border-slate-200 shadow-xl overflow-hidden ring-1 ring-slate-900/5">
+    <form onSubmit={handleSubmit} className="relative max-w-4xl mx-auto mb-2">
+      {/* Background Glow */}
+      <div className="absolute -inset-2 bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+
+      <div className="relative flex items-end gap-2 bg-white rounded-[1.8rem] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-within:border-teal-500/30 transition-all duration-300 p-2 pr-3">
+
         <textarea
           ref={textareaRef}
           rows={1}
@@ -73,39 +75,37 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask about hymns, conducting, or music theory..."
-          className="w-full resize-none bg-transparent py-5 pl-7 pr-32 text-slate-700 focus:outline-none scrollbar-hide text-lg font-medium placeholder:text-slate-300"
+          className="flex-1 resize-none bg-transparent py-4 pl-5 pr-2 text-slate-700 focus:outline-none text-[15px] font-medium placeholder:text-slate-300 min-h-[56px] max-h-[200px]"
           disabled={disabled}
         />
-        
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+
+        <div className="flex items-center gap-1.5 pb-1">
           {recognition && (
             <button
               type="button"
               onClick={toggleListening}
               disabled={disabled}
-              className={`p-3.5 rounded-full transition-all flex items-center justify-center ${
-                isListening 
-                  ? 'bg-red-50 text-red-600 animate-pulse' 
+              className={`p-2.5 rounded-full transition-all flex items-center justify-center ${isListening
+                  ? 'bg-red-50 text-red-600 animate-pulse'
                   : 'text-slate-400 hover:bg-slate-50 hover:text-teal-600'
-              }`}
-              title={isListening ? "Listening..." : "Voice input"}
+                }`}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5z"/>
-                <path d="M10 8a2 2 0 1 1-4 0V3a2 2 0 1 1 4 0v5zM8 0a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V3a3 3 0 0 0-3-3z"/>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
             </button>
           )}
-          
+
           <button
             type="submit"
             disabled={!input.trim() || disabled}
-            className="bg-slate-900 hover:bg-slate-800 text-white p-3.5 rounded-full shadow-lg shadow-slate-200 disabled:opacity-30 disabled:shadow-none transition-all"
+            className={`p-2.5 rounded-2xl transition-all flex items-center justify-center ${!input.trim() || disabled
+                ? 'bg-slate-100 text-slate-300'
+                : 'bg-slate-900 text-white shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+              }`}
           >
             {disabled ? (
               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"></path><path d="M22 2 11 13"></path></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             )}
           </button>
         </div>

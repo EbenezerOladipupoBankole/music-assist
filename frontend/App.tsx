@@ -133,66 +133,72 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900 selection:bg-teal-100 selection:text-teal-900">
+    <div className="flex h-screen bg-[#f8fafc] overflow-hidden font-sans text-slate-900 selection:bg-teal-100">
 
-      {/* Main Interface */}
-      <main className="flex-1 flex flex-col h-full relative w-full bg-white">
-        {/* Header */}
-        <header className="h-16 border-b border-slate-100 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-            </div>
-            <h2 className="text-sm font-semibold text-slate-700 hidden md:block">Music Assist</h2>
+      {/* Sidebar - Desktop Only */}
+      <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-100 p-6">
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
           </div>
+          <div>
+            <h1 className="font-serif font-black text-lg tracking-tight leading-none text-slate-900">Music Assist</h1>
+            <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Ecclesiastical AI</span>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {user ? (
-              <div className="flex items-center gap-3 pl-4">
-                <div className="text-right hidden sm:block">
-                  <div className="text-xs font-bold text-slate-700">{user.displayName || user.email}</div>
-                  <div className="text-[10px] text-slate-400">Authenticated</div>
+        <nav className="flex-1 space-y-1">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 text-slate-900 font-bold text-sm transition-all border border-slate-200/50">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
+            New Consultation
+          </button>
+        </nav>
+
+        <div className="mt-auto pt-6 border-t border-slate-50">
+          {user ? (
+            <div className="flex items-center gap-3">
+              {user.photoURL ? (
+                <img src={user.photoURL} className="w-8 h-8 rounded-full border border-slate-100" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                  {user.displayName?.charAt(0)}
                 </div>
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full shadow-sm border border-slate-200" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-sm border border-white">
-                    {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all" title="Sign Out">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                </button>
+              )}
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-xs font-bold truncate text-slate-700">{user.displayName}</p>
+                <button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider">Sign Out</button>
               </div>
-            ) : (
-              <button onClick={() => setIsLoginModalOpen(true)} className="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all shadow-sm flex items-center gap-2">
-                <span>Sign In</span>
-              </button>
-            )}
-          </div>
+            </div>
+          ) : (
+            <button onClick={() => setIsLoginModalOpen(true)} className="w-full py-3 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:shadow-md transition-all">
+              Sign In to Account
+            </button>
+          )}
+        </div>
+      </aside>
+
+      <main className="flex-1 flex flex-col h-full relative bg-white lg:rounded-l-[2rem] lg:my-2 lg:mr-2 lg:shadow-2xl lg:shadow-slate-200/50 overflow-hidden border-l border-slate-100">
+        {/* Mobile Header */}
+        <header className="lg:hidden h-16 border-b border-slate-100 flex items-center justify-between px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20">
+          <h2 className="font-serif font-black text-base tracking-tight text-slate-900">Music Assist</h2>
+          {!user && (
+            <button onClick={() => setIsLoginModalOpen(true)} className="text-xs font-bold text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg active:bg-slate-50">Sign In</button>
+          )}
         </header>
 
         {/* Chat Stream */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 md:px-0 scroll-smooth bg-slate-50/50">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-8 pb-4 scroll-smooth">
           {messages.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center max-w-3xl mx-auto p-6">
-              <div className="text-center mb-12 space-y-6 animate-in fade-in zoom-in duration-500">
-                <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-6">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <defs>
-                      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: '#0d9488', stopOpacity: 1 }} />
-                        <stop offset="100%" style={{ stopColor: '#0f766e', stopOpacity: 1 }} />
-                      </linearGradient>
-                    </defs>
-                    <path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>
-                  </svg>
+            <div className="h-full flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
+              <div className="text-center mb-10">
+                <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner border border-slate-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                 </div>
-                <h3 className="text-3xl font-bold text-slate-900 tracking-tight font-serif">
-                  Welcome to <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">Music Assist</span>
+                <h3 className="text-4xl font-serif font-black text-slate-900 mb-4 tracking-tight leading-tight">
+                  Sacred Guidance for <br /><span className="text-teal-600">Sacred Music</span>
                 </h3>
-                <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
-                  Ask about hymn selection, conducting techniques, or music theory grounded in resources from The Church of Jesus Christ of Latter-day Saints.
+                <p className="text-slate-400 text-sm max-w-sm mx-auto leading-[1.6]">
+                  Your specialized assistant for hymns, conducting, and Church music theory.
                 </p>
               </div>
 
@@ -201,28 +207,28 @@ const App: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(prompt)}
-                    className="group p-4 bg-white border border-slate-200/60 hover:border-teal-500/50 rounded-xl text-left hover:shadow-md transition-all duration-200 flex items-center justify-between"
+                    className="p-5 bg-white border border-slate-100 hover:border-teal-500/30 rounded-2xl text-left hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 group"
                   >
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-teal-700">{prompt}</span>
-                    <svg className="opacity-0 group-hover:opacity-100 transition-opacity text-teal-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                    <span className="text-[13px] font-bold text-slate-600 group-hover:text-slate-900 block mb-1">Inquiry</span>
+                    <span className="text-sm text-slate-400 group-hover:text-teal-700 leading-snug">{prompt}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="max-w-3xl mx-auto w-full py-8 space-y-6">
+            <div className="max-w-4xl mx-auto w-full px-4 md:px-10">
               {messages.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} />
               ))}
               {isLoading && (
-                <div className="flex justify-start px-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-3">
-                    <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex justify-start px-4 mb-10">
+                  <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none p-5 shadow-sm flex items-center gap-4">
+                    <div className="flex space-x-1.5">
+                      <div className="w-1 h-1 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-1 h-1 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-1 h-1 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
-                    <span className="text-xs font-medium text-slate-400">Consulting handbook...</span>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest text-shadow-glow">Consulting Handbook</span>
                   </div>
                 </div>
               )}
@@ -231,14 +237,12 @@ const App: React.FC = () => {
         </div>
 
         {/* Input Dock */}
-        <div className="shrink-0 p-4 bg-white border-t border-slate-100">
-          <div className="max-w-3xl mx-auto">
-            <ChatInput onSend={handleSendMessage} disabled={isLoading} />
-            <div className="text-center mt-3">
-              <p className="text-[10px] text-slate-400">
-                AI can make mistakes. Please verify important information.
-              </p>
-            </div>
+        <div className="shrink-0 p-6 bg-white lg:bg-transparent">
+          <ChatInput onSend={handleSendMessage} disabled={isLoading} />
+          <div className="text-center mt-3">
+            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.2em]">
+              Authorized Use Only • v1.2
+            </p>
           </div>
         </div>
       </main>
