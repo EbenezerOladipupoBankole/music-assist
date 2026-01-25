@@ -13,7 +13,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={`flex w-full mb-12 ${isAI ? 'justify-start' : 'justify-end'}`}>
       <div className={`relative max-w-[88%] md:max-w-[80%] rounded-3xl p-7 transition-all ${isAI ? 'bg-white border border-slate-100 shadow-sm' : COLORS.chatUser}`}>
-        
+
         {/* Identity Badge */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
@@ -32,12 +32,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
         </div>
-        
+
         {/* Content */}
-        <div className={`text-[16px] leading-relaxed whitespace-pre-wrap ${isAI ? 'font-serif text-slate-800' : 'font-sans text-white/95'}`}>
-          {message.text}
-        </div>
-        
+        <div
+          className={`text-[16px] leading-relaxed whitespace-pre-wrap ${isAI ? 'font-serif text-gray-900 font-medium' : 'font-sans text-white/95'}`}
+          dangerouslySetInnerHTML={{ __html: message.text || '<span class="text-gray-400 italic">Thinking...</span>' }}
+        />
+
         {/* Sources / Bibliographic section */}
         {isAI && message.sources && message.sources.length > 0 && (
           <div className="mt-8 pt-6 border-t border-slate-50">
@@ -47,7 +48,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             </p>
             <div className="flex flex-col gap-2">
               {message.sources.map((source, idx) => (
-                <a 
+                <a
                   key={idx}
                   href={source.url}
                   target="_blank"
@@ -55,7 +56,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   className="flex items-center justify-between group p-3 rounded-xl bg-slate-50 border border-transparent hover:border-teal-100 hover:bg-teal-50/30 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-teal-600"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 group-hover:text-teal-600"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" /><path d="M8 7h6" /><path d="M8 11h8" /></svg>
                     <span className="text-xs font-semibold text-slate-600 group-hover:text-teal-900">{source.title}</span>
                   </div>
                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>

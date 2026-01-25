@@ -8,13 +8,13 @@ import ChatInput from './components/ChatInput.tsx';
 import LoginModal from './components/LoginModal.tsx';
 import { auth, googleProvider } from './firebase.ts';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
- 
+
 interface UserProfile {
   displayName: string | null;
   email: string | null;
   photoURL: string | null;
 }
- 
+
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -104,7 +104,7 @@ const App: React.FC = () => {
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
         sender: Sender.AI,
-        text: response.text,
+        text: response.response,
         timestamp: Date.now(),
         sources: response.sources
       };
@@ -113,7 +113,7 @@ const App: React.FC = () => {
       setStatusText('Consultation complete');
     } catch (error) {
       console.error("App: Service Error", error);
-      
+
       let errorMessage = "I was unable to retrieve guidance at this moment. Please ensure the sacred music archive is accessible.";
       if (error instanceof Error) {
         errorMessage += `\n\n[System Diagnostic: ${error.message}]`;
@@ -134,41 +134,41 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-900 selection:bg-teal-100 selection:text-teal-900">
-      
+
       {/* Main Interface */}
       <main className="flex-1 flex flex-col h-full relative w-full bg-white">
         {/* Header */}
         <header className="h-16 border-b border-slate-100 flex items-center justify-between px-4 md:px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20">
           <div className="flex items-center gap-4">
-             <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-             </div>
-             <h2 className="text-sm font-semibold text-slate-700 hidden md:block">Music Assist</h2>
+            <div className="w-8 h-8 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            </div>
+            <h2 className="text-sm font-semibold text-slate-700 hidden md:block">Music Assist</h2>
           </div>
-          
+
           <div className="flex items-center gap-3">
-             {user ? (
-               <div className="flex items-center gap-3 pl-4">
-                 <div className="text-right hidden sm:block">
-                    <div className="text-xs font-bold text-slate-700">{user.displayName || user.email}</div>
-                    <div className="text-[10px] text-slate-400">Authenticated</div>
-                 </div>
-                 {user.photoURL ? (
-                   <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full shadow-sm border border-slate-200" />
-                 ) : (
-                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-sm border border-white">
-                     {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                   </div>
-                 )}
-                 <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all" title="Sign Out">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-                 </button>
-               </div>
-             ) : (
-               <button onClick={() => setIsLoginModalOpen(true)} className="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all shadow-sm flex items-center gap-2">
-                 <span>Sign In</span>
-               </button>
-             )}
+            {user ? (
+              <div className="flex items-center gap-3 pl-4">
+                <div className="text-right hidden sm:block">
+                  <div className="text-xs font-bold text-slate-700">{user.displayName || user.email}</div>
+                  <div className="text-[10px] text-slate-400">Authenticated</div>
+                </div>
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || 'User'} className="w-8 h-8 rounded-full shadow-sm border border-slate-200" />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center text-white font-bold text-xs shadow-sm border border-white">
+                    {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <button onClick={handleLogout} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all" title="Sign Out">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setIsLoginModalOpen(true)} className="px-5 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-full transition-all shadow-sm flex items-center gap-2">
+                <span>Sign In</span>
+              </button>
+            )}
           </div>
         </header>
 
@@ -180,16 +180,16 @@ const App: React.FC = () => {
                 <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mx-auto mb-6">
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#grad1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <defs>
-                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor:'#0d9488', stopOpacity:1}} />
-                        <stop offset="100%" style={{stopColor:'#0f766e', stopOpacity:1}} />
-                        </linearGradient>
+                      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: '#0d9488', stopOpacity: 1 }} />
+                        <stop offset="100%" style={{ stopColor: '#0f766e', stopOpacity: 1 }} />
+                      </linearGradient>
                     </defs>
                     <path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>
                   </svg>
                 </div>
                 <h3 className="text-3xl font-bold text-slate-900 tracking-tight font-serif">
-                  Welcome to <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">Music Assist</span>
+                  Welcome to <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600">Music Assist</span>
                 </h3>
                 <p className="text-slate-500 text-sm max-w-md mx-auto leading-relaxed">
                   Ask about hymn selection, conducting techniques, or music theory grounded in resources from The Church of Jesus Christ of Latter-day Saints.
@@ -204,7 +204,7 @@ const App: React.FC = () => {
                     className="group p-4 bg-white border border-slate-200/60 hover:border-teal-500/50 rounded-xl text-left hover:shadow-md transition-all duration-200 flex items-center justify-between"
                   >
                     <span className="text-sm font-medium text-slate-700 group-hover:text-teal-700">{prompt}</span>
-                    <svg className="opacity-0 group-hover:opacity-100 transition-opacity text-teal-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                    <svg className="opacity-0 group-hover:opacity-100 transition-opacity text-teal-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                   </button>
                 ))}
               </div>
@@ -217,12 +217,12 @@ const App: React.FC = () => {
               {isLoading && (
                 <div className="flex justify-start px-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                   <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-3">
-                      <div className="flex space-x-1">
-                        <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                      </div>
-                      <span className="text-xs font-medium text-slate-400">Consulting handbook...</span>
+                    <div className="flex space-x-1">
+                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                    <span className="text-xs font-medium text-slate-400">Consulting handbook...</span>
                   </div>
                 </div>
               )}
@@ -243,10 +243,10 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      <LoginModal 
-        isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
-        onLogin={handleGoogleLogin} 
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLogin={handleGoogleLogin}
       />
     </div>
   );

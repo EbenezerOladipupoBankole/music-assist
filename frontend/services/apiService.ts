@@ -1,8 +1,7 @@
 import { Message } from '../types';
 
-// TODO: Replace this URL with your actual Render Backend URL
-// Example: "https://music-assist-backend.onrender.com"
-const API_BASE_URL = "https://music-assist-backend.onrender.com";
+// Use environment variable for API URL or default to localhost for development
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export const musicAssistApi = {
   sendMessage: async (text: string, history: Message[]) => {
