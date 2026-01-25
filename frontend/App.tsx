@@ -291,7 +291,9 @@ const App: React.FC = () => {
           {!user ? (
             <button onClick={() => setIsLoginModalOpen(true)} className="text-[10px] font-black uppercase tracking-widest text-slate-900 border-2 border-slate-900 px-4 py-1.5 rounded-lg active:bg-slate-50">Login</button>
           ) : (
-            <button onClick={startNewChat} className="w-9 h-9 rounded-xl bg-slate-900 shadow-md flex items-center justify-center text-white active:scale-95 transition-transform"><svg className="w-4 h-4" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg></button>
+            <button onClick={startNewChat} title="New Consultation" className="w-9 h-9 rounded-xl bg-slate-900 shadow-md flex items-center justify-center text-white active:scale-95 transition-transform">
+              <svg className="w-4 h-4" fill="none" stroke="white" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" /></svg>
+            </button>
           )}
         </header>
 
