@@ -352,6 +352,45 @@ async def get_stats():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")
 
+@app.get("/conversations/{user_id}")
+async def get_user_conversations(user_id: str):
+    """List past conversations for a user"""
+    if not rag_pipeline or not rag_pipeline.memory:
+        return []
+    
+    conversations = await asyncio.to_thread(
+        rag_pipeline.memory.get_user_conversations, user_id
+    )
+    return conversations
+
+@app.get("/conversations/{conversation_id}/history")
+async def get_conversation_history(conversation_id: str):
+    """Retrieve full message history for a specific conversation"""
+    if not rag_pipeline or not rag_pipeline.memory:
+        return []
+    
+    raw_history = await asyncio.to_thread(
+        rag_pipeline.memory.get_history, conversation_id
+    )
+    
+    # Format for the frontend (Sender.USER / Sender.AI logic)
+    formatted = []
+    for i, (q, a) in enumerate(raw_history):
+        formatted.append({
+            "id": f"{conversation_id}_{i}_q",
+            "sender": "user",
+            "text": q,
+            "timestamp": datetime.utcnow().isoformat() # Approx
+        })
+        formatted.append({
+            "id": f"{conversation_id}_{i}_a",
+            "sender": "ai",
+            "text": a,
+            "timestamp": datetime.utcnow().isoformat(),
+            "sources": [] # Re-fetching sources is expensive, leaving empty for now
+        })
+    return formatted
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(

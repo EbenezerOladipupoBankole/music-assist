@@ -9,22 +9,67 @@ import LoginModal from './components/LoginModal.tsx';
 import { auth, googleProvider } from './firebase.ts';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 
+import { API_BASE_URL } from './constants.ts';
+
 interface UserProfile {
   displayName: string | null;
   email: string | null;
   photoURL: string | null;
+  uid: string;
+}
+
+interface SavedConversation {
+  id: string;
+  title: string;
 }
 
 const App: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [statusText, setStatusText] = useState('System Standby');
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [history, setHistory] = useState<SavedConversation[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [queryCount, setQueryCount] = useState<number>(() => {
     return parseInt(localStorage.getItem('music_assist_query_count') || '0');
   });
+
+  // Fetch Side History
+  const fetchHistory = async (uid: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversations/${uid}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHistory(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch history", err);
+    }
+  };
+
+  // Load Specific Conversation
+  const loadConversation = async (convId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/conversations/${convId}/history`);
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(data);
+        setCurrentConversationId(convId);
+      }
+    } catch (err) {
+      console.error("Failed to load conversation", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setCurrentConversationId(null);
+  };
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -39,13 +84,17 @@ const App: React.FC = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser({
+        const profile = {
           displayName: currentUser.displayName,
           email: currentUser.email,
           photoURL: currentUser.photoURL,
-        });
+          uid: currentUser.uid
+        };
+        setUser(profile);
+        fetchHistory(currentUser.uid);
       } else {
         setUser(null);
+        setHistory([]);
       }
     });
     return () => unsubscribe();
@@ -67,6 +116,7 @@ const App: React.FC = () => {
     try {
       await signOut(auth);
       setUser(null);
+      startNewChat();
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -93,15 +143,18 @@ const App: React.FC = () => {
     setStatusText('Reviewing handbook...');
 
     try {
-      // Increment query count if not logged in
       if (!user) {
         const newCount = queryCount + 1;
         setQueryCount(newCount);
         localStorage.setItem('music_assist_query_count', newCount.toString());
       }
 
-      // Consultation with the Music-Assist RAG backend
-      const response = await musicAssistApi.sendMessage(text, messages);
+      const response = await musicAssistApi.sendMessage(text, messages, currentConversationId, user?.uid);
+
+      if (!currentConversationId && response.conversation_id) {
+        setCurrentConversationId(response.conversation_id);
+        if (user) fetchHistory(user.uid);
+      }
 
       const aiMsg: Message = {
         id: (Date.now() + 1).toString(),
@@ -141,7 +194,7 @@ const App: React.FC = () => {
       <aside className="hidden lg:flex flex-col w-72 bg-white border-r border-slate-100 p-6">
         <div className="flex items-center gap-3 mb-10">
           <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
           </div>
           <div>
             <h1 className="font-serif font-black text-lg tracking-tight leading-none text-slate-900">Music Assist</h1>
@@ -149,88 +202,116 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1">
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 text-slate-900 font-bold text-sm transition-all border border-slate-200/50">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-            New Consultation
-          </button>
-        </nav>
+        <button
+          onClick={startNewChat}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-slate-50 text-slate-900 font-bold text-sm transition-all border border-slate-200/50 hover:bg-slate-100 active:scale-[0.98] mb-8"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg>
+          New Consultation
+        </button>
+
+        <div className="flex-1 overflow-y-auto space-y-1 pr-2 scrollbar-hide">
+          <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Past Consultations</p>
+          {history.length > 0 ? history.map((conv) => (
+            <button
+              key={conv.id}
+              onClick={() => loadConversation(conv.id)}
+              className={`w-full text-left px-4 py-3 rounded-xl transition-all group relative ${currentConversationId === conv.id
+                  ? 'bg-teal-50 text-teal-900 shadow-sm border border-teal-100'
+                  : 'hover:bg-slate-50 text-slate-500'
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`w-1.5 h-1.5 rounded-full ${currentConversationId === conv.id ? 'bg-teal-500' : 'bg-slate-300'}`}></div>
+                <p className="text-xs font-bold truncate max-w-[160px]">{conv.title}</p>
+              </div>
+            </button>
+          )) : (
+            <div className="px-4 py-8 text-center border-2 border-dashed border-slate-50 rounded-2xl">
+              <p className="text-[11px] text-slate-300 font-medium italic">No recent history</p>
+            </div>
+          )}
+        </div>
 
         <div className="mt-auto pt-6 border-t border-slate-50">
           {user ? (
             <div className="flex items-center gap-3">
               {user.photoURL ? (
-                <img src={user.photoURL} className="w-8 h-8 rounded-full border border-slate-100" />
+                <img src={user.photoURL} className="w-9 h-9 rounded-full border border-slate-100 shadow-sm" />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shadow-md">
                   {user.displayName?.charAt(0)}
                 </div>
               )}
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-xs font-bold truncate text-slate-700">{user.displayName}</p>
-                <button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider">Sign Out</button>
+                <p className="text-xs font-black truncate text-slate-800 leading-tight">{user.displayName}</p>
+                <button onClick={handleLogout} className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-widest">End Session</button>
               </div>
             </div>
           ) : (
-            <button onClick={() => setIsLoginModalOpen(true)} className="w-full py-3 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-sm hover:shadow-md transition-all">
+            <button onClick={() => setIsLoginModalOpen(true)} className="w-full py-4 rounded-xl bg-slate-900 text-white text-xs font-black shadow-xl hover:bg-slate-800 transition-all uppercase tracking-widest">
               Sign In to Account
             </button>
           )}
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col h-full relative bg-white lg:rounded-l-[2rem] lg:my-2 lg:mr-2 lg:shadow-2xl lg:shadow-slate-200/50 overflow-hidden border-l border-slate-100">
+      <main className="flex-1 flex flex-col h-full relative bg-white lg:rounded-l-[2.5rem] lg:my-2 lg:mr-2 lg:shadow-[0_0_50px_rgba(15,23,42,0.05)] overflow-hidden border-l border-slate-100/50">
         {/* Mobile Header */}
         <header className="lg:hidden h-16 border-b border-slate-100 flex items-center justify-between px-6 bg-white/80 backdrop-blur-md sticky top-0 z-20">
-          <h2 className="font-serif font-black text-base tracking-tight text-slate-900">Music Assist</h2>
-          {!user && (
-            <button onClick={() => setIsLoginModalOpen(true)} className="text-xs font-bold text-slate-900 border border-slate-200 px-3 py-1.5 rounded-lg active:bg-slate-50">Sign In</button>
+          <h2 className="font-serif font-black text-base tracking-tight text-slate-900 italic">Music Assist</h2>
+          {!user ? (
+            <button onClick={() => setIsLoginModalOpen(true)} className="text-[10px] font-black uppercase tracking-widest text-slate-900 border-2 border-slate-900 px-4 py-1.5 rounded-lg active:bg-slate-50">Login</button>
+          ) : (
+            <button onClick={startNewChat} className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-600"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" /></svg></button>
           )}
         </header>
 
         {/* Chat Stream */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-8 pb-4 scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-10 pb-4 scroll-smooth">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
-              <div className="text-center mb-10">
-                <div className="w-20 h-20 bg-slate-50 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner border border-slate-100">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              <div className="text-center mb-16">
+                <div className="w-24 h-24 bg-slate-50 rounded-[3rem] flex items-center justify-center mx-auto mb-10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100/80 relative text-shadow-glow">
+                  <div className="absolute inset-0 bg-teal-500/5 rounded-full blur-2xl animate-pulse"></div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="relative z-10"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
                 </div>
-                <h3 className="text-4xl font-serif font-black text-slate-900 mb-4 tracking-tight leading-tight">
-                  Sacred Guidance for <br /><span className="text-teal-600">Sacred Music</span>
+                <h3 className="text-5xl font-serif font-black text-slate-900 mb-6 tracking-tight leading-[1.1]">
+                  Sacred Guidance for <br /><span className="text-teal-600 italic">Sacred Music</span>
                 </h3>
-                <p className="text-slate-400 text-sm max-w-sm mx-auto leading-[1.6]">
-                  Your specialized assistant for hymns, conducting, and Church music theory.
+                <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed font-medium">
+                  Welcome to Music Assist. I am your specialized RAG-powered assistant for hymns, conducting, and official music policy.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
                 {SUGGESTED_PROMPTS.map((prompt, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSendMessage(prompt)}
-                    className="p-5 bg-white border border-slate-100 hover:border-teal-500/30 rounded-2xl text-left hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 group"
+                    className="p-6 bg-white border border-slate-200/60 hover:border-teal-500/30 rounded-[1.8rem] text-left hover:shadow-[0_20px_40px_rgba(15,23,42,0.06)] transition-all duration-500 group relative overflow-hidden"
                   >
-                    <span className="text-[13px] font-bold text-slate-600 group-hover:text-slate-900 block mb-1">Inquiry</span>
-                    <span className="text-sm text-slate-400 group-hover:text-teal-700 leading-snug">{prompt}</span>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50/20 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-700"></div>
+                    <span className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-teal-600 block mb-2 transition-colors">Consultation</span>
+                    <span className="text-[15px] text-slate-600 group-hover:text-slate-900 leading-snug font-semibold transition-colors">{prompt}</span>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto w-full px-4 md:px-10">
+            <div className="max-w-4xl mx-auto w-full px-6 md:px-12">
               {messages.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} />
               ))}
               {isLoading && (
-                <div className="flex justify-start px-4 mb-10">
-                  <div className="bg-slate-50 border border-slate-100 rounded-2xl rounded-tl-none p-5 shadow-sm flex items-center gap-4">
-                    <div className="flex space-x-1.5">
-                      <div className="w-1 h-1 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-1 h-1 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-1 h-1 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="flex justify-start px-4 mb-12">
+                  <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none p-5 shadow-sm flex items-center gap-5">
+                    <div className="flex space-x-2">
+                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-1.5 h-1.5 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest text-shadow-glow">Consulting Handbook</span>
+                    <span className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Consulting Handbook</span>
                   </div>
                 </div>
               )}
@@ -239,11 +320,11 @@ const App: React.FC = () => {
         </div>
 
         {/* Input Dock */}
-        <div className="shrink-0 p-6 bg-white lg:bg-transparent">
+        <div className="shrink-0 p-8 pt-0 bg-white lg:bg-transparent">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
-          <div className="text-center mt-3">
-            <p className="text-[9px] text-slate-300 font-bold uppercase tracking-[0.2em]">
-              Authorized Use Only • v1.2
+          <div className="text-center mt-5">
+            <p className="text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
+              Music Management System • Authorized Use Only
             </p>
           </div>
         </div>

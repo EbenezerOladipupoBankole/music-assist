@@ -477,7 +477,7 @@ Answer (formatted as clean HTML body content):"""
                 search_method = "local only"
             
             # Update conversation history in Firestore
-            await asyncio.to_thread(self.memory.add_message, conversation_id, query, result)
+            await asyncio.to_thread(self.memory.add_message, conversation_id, query, result, user_id)
             
             # Calculate total response time
             response_time_ms = int((time.time() - start_time) * 1000)

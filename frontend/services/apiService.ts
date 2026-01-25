@@ -2,7 +2,7 @@ import { Message } from '../types';
 import { API_BASE_URL } from '../constants.ts';
 
 export const musicAssistApi = {
-  sendMessage: async (text: string, history: Message[]) => {
+  sendMessage: async (text: string, history: Message[], conversationId?: string | null, userId?: string | null) => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
@@ -11,7 +11,9 @@ export const musicAssistApi = {
         },
         body: JSON.stringify({
           message: text,
-          history: history
+          history: history,
+          conversation_id: conversationId,
+          user_id: userId
         }),
       });
 
