@@ -27,5 +27,5 @@ export const REFERENCE_LINKS = [
 
 export const API_BASE_URL = typeof window !== 'undefined' && 
   (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-    ? '' // In production, use relative paths (handled by Firebase rewrites)
+    ? 'https://music-assist-backend.onrender.com' // Updated for Render: Use full backend URL
     : 'http://127.0.0.1:8080'; // In local development, point to the backend server
