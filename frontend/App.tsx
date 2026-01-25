@@ -53,11 +53,13 @@ const App: React.FC = () => {
 
   const handleGoogleLogin = async () => {
     try {
+      console.log("Music-Assist: Attempting Google Login...");
       await signInWithPopup(auth, googleProvider);
+      console.log("Music-Assist: Login successful");
       setIsLoginModalOpen(false);
-    } catch (error) {
-      console.error("Login failed", error);
-      alert("Authentication failed. Please try again.");
+    } catch (error: any) {
+      console.error("Music-Assist: Login failed", error);
+      alert(`Authentication failed: ${error.message || 'Unknown error'}`);
     }
   };
 
