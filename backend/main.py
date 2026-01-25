@@ -26,14 +26,16 @@ load_dotenv()
 # Global variables for RAG components
 rag_pipeline = None
 hymn_player = None
+audio_cache = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize RAG pipeline on startup"""
-    global rag_pipeline, hymn_player
+    """Initialize components on startup"""
+    global rag_pipeline, hymn_player, audio_cache
     
     from rag_pipeline import RAGPipeline
     from hymn_player import HymnPlayer
+    from audio_manager import AudioCacheManager
     
     # Initialize the RAG pipeline
     try:
@@ -41,10 +43,8 @@ async def lifespan(app: FastAPI):
             vector_db_path=os.getenv("VECTOR_DB_PATH", "./data/vector_store"),
             model_name=os.getenv("LLM_MODEL", "gpt-3.5-turbo")
         )
-        
         # Load or create vector store
         await rag_pipeline.initialize()
-        
         print("[OK] RAG Pipeline initialized successfully")
     except Exception as e:
         print(f"[WARNING] RAG Pipeline failed to initialize: {e}")
@@ -67,18 +67,27 @@ async def lifespan(app: FastAPI):
                 import json
                 cred_dict = json.loads(firebase_json)
                 cred = credentials.Certificate(cred_dict)
-                firebase_admin.initialize_app(cred)
+                firebase_admin.initialize_app(cred, {
+                    'storageBucket': 'music-assists.firebasestorage.app'
+                })
                 print("[OK] Firebase Admin initialized successfully (from Environment Variable)")
             elif os.path.exists(cred_path):
                 cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred)
+                firebase_admin.initialize_app(cred, {
+                    'storageBucket': 'music-assists.firebasestorage.app'
+                })
                 print(f"[OK] Firebase Admin initialized successfully (Local Key: {cred_path})")
             else:
                 # Fallback to Application Default Credentials
-                firebase_admin.initialize_app()
+                firebase_admin.initialize_app(None, {
+                    'storageBucket': 'music-assists.firebasestorage.app'
+                })
                 print("[OK] Firebase Admin initialized successfully (ADC)")
+        
+        # Initialize Audio Cache (after Firebase is up)
+        audio_cache = AudioCacheManager()
     except Exception as e:
-        print(f"[WARNING] Firebase Admin failed to initialize: {e}. Firebase features disabled.")
+        print(f"[WARNING] Firebase/Storage failed to initialize: {e}")
 
     yield
 
@@ -210,6 +219,15 @@ async def chat(message: ChatMessage):
             if hymns:
                 if len(hymns) == 1:
                     h = hymns[0]
+                    # Get or create cached URL
+                    audio_url = h['url']
+                    if audio_cache:
+                        try:
+                            import asyncio
+                            audio_url = await asyncio.to_thread(audio_cache.get_audio_url, h['number'], h['url'])
+                        except Exception as e:
+                            print(f"[Error] Audio caching failed: {e}")
+
                     response_text = (
                         f"<div class='musical-response p-4 border-l-4 border-teal-500 bg-slate-50/50 rounded-r-xl mt-2 mb-4'>"
                         f"<div class='flex items-center gap-2 mb-2'>"
@@ -217,16 +235,21 @@ async def chat(message: ChatMessage):
                         f"<span class='text-xs font-black uppercase tracking-widest text-teal-700'>Now Performing</span>"
                         f"</div>"
                         f"<p class='font-serif text-lg mb-4 text-slate-900 italic'>\"{h['title']}\" — Hymn #{h['number']}</p>"
-                        f"<audio controls class='w-full h-10 border-2 border-slate-100 rounded-lg shadow-sm' src=\"{h['url']}\"></audio>"
+                        f"<audio controls preload='auto' class='w-full h-10 border-2 border-slate-100 rounded-lg shadow-sm' src=\"{audio_url}\"></audio>"
                         f"</div>"
                     )
                 else:
                     response_text = "<div class='mb-4'><p class='mb-4'>I found multiple hymns matching your request. Which one would you like to hear?</p>"
                     for h in hymns:
+                        audio_url = h['url']
+                        if audio_cache:
+                            import asyncio
+                            audio_url = await asyncio.to_thread(audio_cache.get_audio_url, h['number'], h['url'])
+                        
                         response_text += (
                             f"<div class='mb-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30'>"
                             f"<p class='font-serif font-bold text-slate-800 mb-2'>\"{h['title']}\" (#{h.get('number', '?')})</p>"
-                            f"<audio controls class='w-full h-8' src=\"{h['url']}\"></audio>"
+                            f"<audio controls preload='metadata' class='w-full h-8' src=\"{audio_url}\"></audio>"
                             f"</div>"
                         )
                     response_text += "</div>"
