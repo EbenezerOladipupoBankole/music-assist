@@ -224,7 +224,7 @@ async def chat(message: ChatMessage):
         )
         
         return ChatResponse(
-            response=result["answer"],
+            response=result["answer"] if result.get("answer") else "I found some relevant sources but couldn't generate a specific answer. Please check the sources below.",
             sources=result["sources"],
             conversation_id=result["conversation_id"],
             timestamp=datetime.utcnow().isoformat(),

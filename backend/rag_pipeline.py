@@ -30,8 +30,8 @@ CONFIG = {
     'CHUNK_SIZE': 1200,
     'CHUNK_OVERLAP': 300,
     'MAX_CONVERSATION_HISTORY': 10,
-    'TOP_K_RESULTS': 10,
-    'FETCH_K_RESULTS': 30,
+    'TOP_K_RESULTS': 8,
+    'FETCH_K_RESULTS': 15,
     'MMR_LAMBDA': 0.5,
     'MIN_CONTENT_LENGTH_FOR_LOCAL': 500,  # chars for trusting local data
     'MIN_DOC_LENGTH_FOR_WEB': 200,  # chars before triggering web search
@@ -265,12 +265,22 @@ If the question requires facts not present in retrieved sources:
 
 === RESPONSE STRUCTURE ===
 
-For every answer:
-• Start with a simple, direct response to their intent
-• Explain the principle (define any musical terms)
-• Give concrete examples from context (cite hymn numbers if present)
-• Note any limits or uncertainty
-• End with: "References: [list sources]"
+You must format your response using **only valid HTML tags** inside the main text (no markdown, no ```html blocks).
+Use the following structure:
+
+<h2>Direct Answer</h2>
+[A direct, friendly answer to the question]
+
+<h2>Key Principles</h2>
+<ul>
+  <li><strong>Principle 1:</strong> Explanation...</li>
+  <li><strong>Principle 2:</strong> Explanation...</li>
+</ul>
+
+<h2>LDS Context & Application</h2>
+[Specific guidance related to the Church handbook or hymnbook]<br><br>
+
+[Note any limits if applicable]
 
 === CONTEXT FROM CHURCH MUSIC RESOURCES ===
 {context}
@@ -278,7 +288,7 @@ For every answer:
 
 User Question: {question}
 
-Answer (interpret intent, ground in context, cite sources, end with References):"""
+Answer (formatted as clean HTML body content):"""
 
         qa_prompt = PromptTemplate(
             template=qa_system_prompt,
@@ -692,9 +702,9 @@ Answer (interpret intent, ground in context, cite sources, end with References):
             retriever = self.vector_store.as_retriever(
                 search_type="mmr",
                 search_kwargs={
-                    "k": 10,
-                    "fetch_k": 30,
-                    "lambda_mult": 0.5
+                    "k": CONFIG['TOP_K_RESULTS'],
+                    "fetch_k": CONFIG['FETCH_K_RESULTS'],
+                    "lambda_mult": CONFIG['MMR_LAMBDA']
                 }
             )
             
