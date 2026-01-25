@@ -156,6 +156,8 @@ class ChatResponse(BaseModel):
     sources: List[dict]
     conversation_id: str
     timestamp: str
+    audio_url: Optional[str] = None
+    audio_title: Optional[str] = None
     confidence: Optional[str] = None
     search_method: Optional[str] = None
 
@@ -217,52 +219,33 @@ async def chat(message: ChatMessage):
                 hymns = [random_hymn]
             
             if hymns:
-                if len(hymns) == 1:
-                    h = hymns[0]
-                    # Get or create cached URL
-                    audio_url = h['url']
-                    if audio_cache:
-                        try:
-                            import asyncio
-                            audio_url = await asyncio.to_thread(audio_cache.get_audio_url, h['number'], h['url'])
-                        except Exception as e:
-                            print(f"[Error] Audio caching failed: {e}")
+                primary_hymn = hymns[0]
+                audio_url = primary_hymn['url']
+                if audio_cache:
+                    try:
+                        import asyncio
+                        audio_url = await asyncio.to_thread(audio_cache.get_audio_url, primary_hymn['number'], primary_hymn['url'])
+                    except Exception as e:
+                        print(f"[Error] Audio caching failed: {e}")
 
-                    response_text = (
-                        f"<div class='musical-response p-4 border-l-4 border-teal-500 bg-slate-50/50 rounded-r-xl mt-2 mb-4'>"
-                        f"<div class='flex items-center gap-2 mb-2'>"
-                        f"<svg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='text-teal-600'><path d='M9 18V5l12-2v13'></path><circle cx='6' cy='18' r='3'></circle><circle cx='18' cy='16' r='3'></circle></svg>"
-                        f"<span class='text-xs font-black uppercase tracking-widest text-teal-700'>Now Performing</span>"
-                        f"</div>"
-                        f"<p class='font-serif text-lg mb-4 text-slate-900 italic'>\"{h['title']}\" — Hymn #{h['number']}</p>"
-                        f"<audio controls preload='auto' class='w-full h-10 border-2 border-slate-100 rounded-lg shadow-sm' src=\"{audio_url}\"></audio>"
-                        f"</div>"
-                    )
+                if len(hymns) == 1:
+                    response_text = f"I've retrieved the official recording for <strong>\"{primary_hymn['title']}\"</strong> (Hymn #{primary_hymn['number']})."
                 else:
-                    response_text = "<div class='mb-4'><p class='mb-4'>I found multiple hymns matching your request. Which one would you like to hear?</p>"
+                    response_text = "I found multiple hymns. I've loaded the first one for you. Which one would you like to hear more of?<br>"
                     for h in hymns:
-                        audio_url = h['url']
-                        if audio_cache:
-                            import asyncio
-                            audio_url = await asyncio.to_thread(audio_cache.get_audio_url, h['number'], h['url'])
-                        
-                        response_text += (
-                            f"<div class='mb-4 p-4 border border-slate-100 rounded-xl bg-slate-50/30'>"
-                            f"<p class='font-serif font-bold text-slate-800 mb-2'>\"{h['title']}\" (#{h.get('number', '?')})</p>"
-                            f"<audio controls preload='metadata' class='w-full h-8' src=\"{audio_url}\"></audio>"
-                            f"</div>"
-                        )
-                    response_text += "</div>"
+                        response_text += f"<br>• {h['title']} (#{h['number']})"
 
                 return ChatResponse(
                     response=response_text,
                     sources=[],
                     conversation_id=message.conversation_id or "sing_request",
                     timestamp=datetime.utcnow().isoformat(),
+                    audio_url=audio_url,
+                    audio_title=f"{primary_hymn['title']} (#{primary_hymn['number']})"
                 )
             else:
                 return ChatResponse(
-                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current list of playable hymns includes: {', '.join(hymn_player.known_hymns[:10])}...",
+                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current library includes: {', '.join(hymn_player.known_hymns[:8])}...",
                     sources=[],
                     conversation_id=message.conversation_id or "sing_request_failed",
                     timestamp=datetime.utcnow().isoformat(),

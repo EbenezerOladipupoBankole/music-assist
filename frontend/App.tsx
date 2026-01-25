@@ -164,7 +164,9 @@ const App: React.FC = () => {
         sender: Sender.AI,
         text: response.response,
         timestamp: Date.now(),
-        sources: response.sources
+        sources: response.sources,
+        audioUrl: response.audio_url,
+        audioTitle: response.audio_title
       };
 
       setMessages(prev => [...prev, aiMsg]);

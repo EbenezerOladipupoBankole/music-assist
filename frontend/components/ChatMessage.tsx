@@ -1,11 +1,96 @@
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender } from '../types.ts';
-import { COLORS } from '../constants.ts';
 
 interface ChatMessageProps {
   message: Message;
 }
+
+const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const current = audioRef.current.currentTime;
+      const duration = audioRef.current.duration;
+      if (duration) {
+        setProgress((current / duration) * 100);
+      }
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setProgress(0);
+  };
+
+  return (
+    <div className="mt-4 p-4 bg-teal-50/50 border-l-4 border-teal-500 rounded-r-xl shadow-inner relative overflow-hidden group">
+      <audio
+        ref={audioRef}
+        src={url}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
+        preload="metadata"
+      />
+
+      <div className="relative z-10 flex items-center gap-4">
+        <button
+          onClick={togglePlay}
+          className="w-12 h-12 flex-shrink-0 bg-teal-600 text-white rounded-full flex items-center justify-center hover:bg-teal-700 active:scale-90 transition-all shadow-lg hover:shadow-teal-200"
+        >
+          {isPlaying ? (
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+          ) : (
+            <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          )}
+        </button>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className={`w-2 h-2 rounded-full bg-teal-500 ${isPlaying ? 'animate-ping' : ''}`}></div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-teal-800">Sacred Performance</span>
+          </div>
+          <p className="text-sm font-bold text-slate-900 truncate pr-4 italic">
+            {title || "Official Hymn Recording"}
+          </p>
+
+          <div className="mt-3 relative h-1.5 w-full bg-slate-200/50 rounded-full overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-teal-500 transition-all duration-300 rounded-full"
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {isPlaying && (
+          <div className="hidden md:flex gap-0.5 items-end h-6 pb-1">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="w-1 bg-teal-400 rounded-full animate-audio-bar" style={{ height: '40%', animationDelay: `${i * 150}ms` }}></div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className={`absolute -right-4 -bottom-4 opacity-5 transition-transform duration-[10s] linear infinite ${isPlaying ? 'rotate-180 scale-150' : ''}`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+      </div>
+    </div>
+  );
+};
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   const isAI = message.sender === Sender.AI;
@@ -13,8 +98,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={`flex w-full mb-8 px-4 md:px-0 ${isAI ? 'justify-start' : 'justify-end'}`}>
       <div className={`relative max-w-[90%] md:max-w-[85%] overflow-hidden transition-all duration-300 ${isAI
-          ? 'bg-white border border-slate-100 shadow-sm rounded-2xl rounded-tl-sm p-6'
-          : 'bg-[#1e293b] text-white shadow-xl rounded-2xl rounded-tr-sm p-5'
+        ? 'bg-white border border-slate-100 shadow-sm rounded-2xl rounded-tl-sm p-6'
+        : 'bg-[#1e293b] text-white shadow-xl rounded-2xl rounded-tr-sm p-5'
         }`}>
 
         {/* Header/Info Bar */}
@@ -33,11 +118,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         {/* Message Content */}
         <div
           className={`text-[15px] md:text-[16px] leading-[1.6] transition-colors ${isAI
-              ? 'font-serif text-slate-800'
-              : 'font-sans text-white/95'
+            ? 'font-serif text-slate-800'
+            : 'font-sans text-white/95'
             }`}
           dangerouslySetInnerHTML={{ __html: message.text || '<span class="text-slate-300 italic animate-pulse">Consulting the handbook...</span>' }}
         />
+
+        {/* Custom Audio Player */}
+        {message.audioUrl && (
+          <AudioPlayer url={message.audioUrl} title={message.audioTitle} />
+        )}
 
         {/* Sources Section */}
         {isAI && message.sources && message.sources.length > 0 && (
