@@ -197,15 +197,24 @@ class ChurchMusicWebSearch:
         return relevance
 
 
-def is_music_related_question(query: str) -> bool:
+def is_music_related_question(query: str, has_history: bool = False) -> bool:
     """
-    Validate if question is about Church music
-    
-    Returns:
-        True if music-related, False if off-topic
+    Validate if question is about Church music.
+    Supports conversational context: if has_history is True, brief follow-up questions
+    are allowed even if they don't contain specific music keywords.
     """
-    query_lower = query.lower()
+    query_lower = query.lower().strip()
     
+    # Relaxed limit for follow-ups (up to 20 words for complex phrasing like "layman understanding")
+    if has_history and len(query_lower.split()) <= 20:
+        follow_up_patterns = [
+            r'\b(explain|elaborate|more|further|details|break down|why|how|what else|tell me)\b',
+            r'\b(yes|no|ok|show me|layman|simple|understand|meaning|context)\b',
+            r'\b(who|when|where|why)\b'
+        ]
+        if any(re.search(pattern, query_lower) for pattern in follow_up_patterns):
+            return True
+
     # Music-related keywords
     music_keywords = [
         'music', 'hymn', 'hymns', 'song', 'songs', 'choir', 'sing', 'singing',
@@ -216,17 +225,10 @@ def is_music_related_question(query: str) -> bool:
         'sacred music', 'prelude', 'postlude', 'rest hymn',
         'tempo', 'melody', 'harmony', 'chord', 'key signature',
         'voice', 'soprano', 'alto', 'tenor', 'bass',
-        'sheet music', 'lyrics', 'verse', 'chorus',
-        # Music theory terms
-        'clef', 'treble', 'bass clef', 'staff', 'note', 'notes', 'scale',
-        'sharp', 'flat', 'natural', 'time signature', 'key', 'major', 'minor',
-        'interval', 'octave', 'rhythm', 'beat', 'measure', 'bar',
-        'rest', 'whole note', 'half note', 'quarter note', 'eighth note',
-        'dotted', 'tie', 'slur', 'fermata', 'accent', 'dynamics',
-        'piano', 'forte', 'crescendo', 'diminuendo',
-        'transpose', 'transposition', 'modulation', 'cadence',
-        'arpeggio', 'progression', 'tonic', 'dominant', 'subdominant',
-        'pitch', 'tuning', 'intonation', 'articulation', 'phrasing',
+        'sheet music', 'lyrics', 'verse', 'chorus', 'intro', 'outro',
+        'solo', 'solos', 'instrument', 'instrumental', 'brass', 'woodwind',
+        'strings', 'orchestra', 'performance', 'practice', 'rehearsal',
+        'rhythm', 'beat', 'measure', 'bar', 'notes', 'staff',
         # Common hymn names and phrases
         'stand all amazed', 'i stand all amazed', 'come follow me', 'how great thou art',
         'amazing grace', 'come thou fount', 'nearer my god', 'abide with me',
@@ -237,68 +239,39 @@ def is_music_related_question(query: str) -> bool:
         'love at home', 'i believe in christ', 'o my father', 'true to the faith',
         'come come ye saints', 'come, come, ye saints', 'all is well',
         # Hymn number references
-        'hymn number', 'hymn #', 'hymn no', 'number is', 'what number',
-        # Hymn history and authorship terms (CRITICAL FIX)
+        'hymn number', 'hymn #', 'hymn no', 'what number', 'which hymn',
+        # Hymn history and authorship terms
         'composed', 'composer', 'wrote', 'written', 'author', 'lyricist',
-        'history of', 'origin', 'tune', 'arrangement', 'arranged'
+        'history of', 'origin', 'tune', 'arrangement', 'arranged',
+        'requirement', 'policy', 'guideline', 'instruction'
     ]
     
     # Check if any music keyword is in the query
     has_music_keyword = any(keyword in query_lower for keyword in music_keywords)
     
-    # Check for hymn number pattern (e.g., "hymn 2", "hymn 193", "#134")
-    import re
+    # Check for hymn number pattern
     has_hymn_number = bool(re.search(r'(hymn|hynm|#)\s*\d+|\d+\s*(hymn|hynm)', query_lower))
     
-    # Check for hymn history questions (WHO composed/wrote patterns)
-    # This specifically catches "Who composed X" or "Who wrote the hymn" patterns
+    # Check for hymn history questions
     has_hymn_history_question = bool(re.search(
         r'who\s+(composed|wrote|created|arranged|is the (composer|author|lyricist))',
         query_lower
     ))
     
-    # Check for "tell me about" + hymn name patterns
-    has_hymn_inquiry = bool(re.search(
-        r'(tell me about|what is|explain|describe|about the hymn)',
-        query_lower
-    )) and any(hymn in query_lower for hymn in [
-        'come come ye saints', 'come, come, ye saints', 'spirit of god', 
-        'i stand all amazed', 'i know that my redeemer', 'how great thou art',
-        'abide with me', 'be still my soul', 'i need thee', 'praise to the man',
-        'high on the mountain top', 'called to serve', 'i am a child of god'
-    ])
-    
-    # Check for Church-related context
-    church_keywords = [
-        'church', 'lds', 'latter-day saint', 'mormon', 'sacrament',
-        'sunday', 'meeting', 'ward', 'stake', 'general conference',
-        'calling', 'handbook', 'gospel', 'testimony', 'worship',
-        'category', 'appropriate', 'christmas', 'easter', 'funeral'
-    ]
-    
-    has_church_context = any(keyword in query_lower for keyword in church_keywords)
-    
-    # Music question must have music keyword AND (church context OR be about music generally)
-    # Examples:
-    # - "What hymns for sacrament?" → music + church = YES
-    # - "Who is Mark Wilberg?" → music name + implicit church = YES
-    # - "How to play piano?" → music but no church = YES (general music is OK)
-    # - "I Stand All Amazed" → hymn name = YES
-    # - "hymn 2" → hymn number = YES
-    # - "Who composed Come Come Ye Saints?" → hymn history question = YES
-    # - "What is the weather?" → no music = NO
-    
-    # Allow common greetings to pass through so the LLM can respond naturally
+    # Allow common greetings
     greetings = ['hello', 'hi ', 'hi!', 'hey', 'greetings', 'morning', 'afternoon', 'evening', 'howdy']
     is_greeting = any(greet in query_lower for greet in greetings) and len(query_lower) < 20
+
+    # Church context check
+    church_keywords = ['church', 'lds', 'latter-day saint', 'ward', 'stake', 'sacrament', 'meeting', 'handbook']
+    has_church_context = any(keyword in query_lower for keyword in church_keywords)
 
     return (
         is_greeting or
         has_music_keyword or 
         has_hymn_number or 
         has_hymn_history_question or 
-        has_hymn_inquiry or
-        (has_church_context and any(word in query_lower for word in ['music', 'sing', 'hymn', 'hynm', 'song', 'choir']))
+        (has_church_context and any(word in query_lower for word in ['policy', 'guideline', 'requirement', 'music', 'sing', 'hymn']))
     )
 
 

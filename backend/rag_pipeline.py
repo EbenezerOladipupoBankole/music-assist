@@ -320,8 +320,17 @@ Response:"""
             
             logger.info(f"Processing query (conv_id={conversation_id}): {query[:100]}...")
             
-            # STEP 1: Validate topic - is this a music question?
-            if not is_music_related_question(query):
+            # STEP 1: Validate topic and AUGMENT query if it's a follow-up
+            has_history = False
+            last_question = ""
+            if conversation_id:
+                history = await asyncio.to_thread(self.memory.get_history, conversation_id)
+                has_history = bool(history)
+                if has_history:
+                    # Get the very last question from the user in history
+                    last_question = history[-1][0] 
+
+            if not is_music_related_question(query, has_history=has_history):
                 logger.info(f"Off-topic query detected: {query[:50]}")
                 return {
                     "answer": "I'm Music-Assist, specialized in Church of Jesus Christ of Latter-day Saints music topics. I can help with hymns, choirs, music callings, sacred music guidelines, and music theory. However, your question appears to be outside my area of expertise. Please ask me about Church music topics!",
@@ -374,9 +383,19 @@ Response:"""
             # Get conversation history for context from Firebase/memory
             conversation_history_str = await self._get_formatted_conversation_history(conversation_id)
             
+            # 🚀 NEW: RE-WRITE QUERY FOR BETTER RETRIEVAL
+            # If the user says "tell me more" or "into layman terms", 
+            # we combine it with the previous question so the database search knows what to look for.
+            search_query = query
+            if has_history and len(query.split()) < 12:
+                is_pure_followup = any(w in query.lower() for w in ["more", "further", "simple", "it", "that", "why", "elaborate", "layman", "tell me", "explain"])
+                if is_pure_followup:
+                    search_query = f"{last_question} {query}"
+                    logger.info(f"Augmented search query: {search_query}")
+
             # STEP 2: Try local vector store first
             search_start = time.time()
-            local_docs = await self._search_local(query)
+            local_docs = await self._search_local(search_query)
             metrics['local_docs_count'] = len(local_docs)
             metrics['search_time_ms'] = int((time.time() - search_start) * 1000)
             
@@ -771,30 +790,8 @@ Response:"""
     
     def _add_confidence_disclaimer(self, response: str, confidence: str, web_results: List[Dict]) -> str:
         """
-        Add appropriate confidence disclaimer to the response.
+        No longer adds disclaimers to responses.
         """
-        # CRITICAL: Do not add disclaimers for simple hymn title responses
-        # (Usually bolded and very short)
-        if len(response) < 60 and "**" in response:
-            return response
-
-        if confidence == "low":
-            disclaimer = (
-                "\n\n---\n"
-                "⚠️ **Note:** This response is based on limited source material. "
-                "For authoritative information, please consult the official Church Music Library "
-                "or General Handbook."
-            )
-            return response + disclaimer
-        
-        elif confidence == "medium" and web_results:
-            disclaimer = (
-                "\n\n---\n"
-                "ℹ️ **Note:** This answer incorporates information from broader Church website sources "
-                "in addition to the curated knowledge base."
-            )
-            return response + disclaimer
-        
         return response
     
     def _combine_contexts(self, local_docs: List[Document], web_results: List[Dict]) -> str:

@@ -249,21 +249,22 @@ async def chat(message: ChatMessage):
         
         logger.info(f"Incoming chat request: UID={uid}, CID={cid}, Message='{user_msg[:30]}...'")
 
-        # 1. Check for Hymn/Singing Request
-        sing_match = re.search(r'\b(sing|play|listen|hear)\b\s*(.*)', user_msg)
-        is_request = (
-            user_msg.startswith(("sing", "play", "listen", "hear", "can you", "could you", "please", "yes", "ok", "sure")) 
-            or (sing_match and sing_match.start() < 15)
-        )
+        # 1. Check for Hymn/Singing Request (Audio Playback)
+        sing_match = re.search(r'\b(sing|play|listen|hear|music for)\b\s*(.*)', user_msg)
+        # Identify specific intent for audio
+        has_audio_intent = any(w in user_msg for w in ["play", "sing", "listen", "audio", "recording"])
+        # Avoid intercepting "list", "about", "what is", "how many"
+        is_informational = any(w in user_msg for w in ["list", "about", "what is", "how many", "tell me", "explain"])
 
-        if hymn_player and is_request and (sing_match or "hymn" in user_msg or "song" in user_msg):
+        if hymn_player and has_audio_intent and not is_informational:
             query = sing_match.group(2).strip() if sing_match else user_msg
             query = re.sub(r'\b(me|to|a|the|hymn|song|number)\b', '', query).strip()
             
             hymns = hymn_player.get_hymns(query)
-            is_generic = any(w in query.lower() for w in ["one", "any", "random", "something", "list", "song", "hymn"]) or not query
+            # Only trigger auto-random if they EXPLICITLY ask for "something" or "random"
+            is_explicit_random = any(w in query.lower() for w in ["random", "something", "any song"])
             
-            if not hymns and is_generic:
+            if not hymns and is_explicit_random:
                 random_hymn = random.choice(hymn_player.hymns_db)
                 hymns = [random_hymn]
             
