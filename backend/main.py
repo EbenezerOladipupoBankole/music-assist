@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 import sys
 import re
 import random
+import asyncio
 import firebase_admin
 from firebase_admin import credentials
 
@@ -430,19 +431,22 @@ async def get_conversation_history(conversation_id: str):
     
     # Format for the frontend (Sender.USER / Sender.AI logic)
     formatted = []
+    # Use a fixed base timestamp to maintain relative order if needed, or just current
+    base_ts = int(datetime.utcnow().timestamp() * 1000)
+    
     for i, (q, a) in enumerate(raw_history):
         formatted.append({
             "id": f"{conversation_id}_{i}_q",
             "sender": "user",
             "text": q,
-            "timestamp": datetime.utcnow().isoformat() # Approx
+            "timestamp": base_ts + (i * 2)
         })
         formatted.append({
             "id": f"{conversation_id}_{i}_a",
             "sender": "ai",
             "text": a,
-            "timestamp": datetime.utcnow().isoformat(),
-            "sources": [] # Re-fetching sources is expensive, leaving empty for now
+            "timestamp": base_ts + (i * 2) + 1,
+            "sources": [] 
         })
     return formatted
 
