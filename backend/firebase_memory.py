@@ -64,30 +64,34 @@ class FirebaseConversationMemory:
             return
 
         try:
-            # 1. Store the message
-            doc_ref = self.db.collection('conversations').document(conversation_id).collection('messages').document()
-            doc_ref.set({
+            # 1. Update the conversation metadata FIRST (ensure doc exists)
+            conv_ref = self.db.collection('conversations').document(conversation_id)
+            
+            # Use a transaction-like approach or just set with merge
+            # We fetch current state to avoid overwriting the title
+            snapshot = conv_ref.get()
+            meta = {
+                'last_updated': firestore.SERVER_TIMESTAMP,
+                'last_query': user_query[:50] + "..." if len(user_query) > 50 else user_query,
+            }
+            
+            if user_id:
+                meta['user_id'] = user_id
+            
+            if not snapshot.exists or 'title' not in snapshot.to_dict():
+                meta['title'] = user_query[:40] + "..." if len(user_query) > 40 else user_query
+
+            conv_ref.set(meta, merge=True)
+
+            # 2. Store the specific message in the subcollection
+            msg_doc_ref = conv_ref.collection('messages').document()
+            msg_doc_ref.set({
                 'query': user_query, 
                 'response': ai_response, 
                 'timestamp': firestore.SERVER_TIMESTAMP
             })
 
-            # 2. Update metadata for the sidebar
-            conv_ref = self.db.collection('conversations').document(conversation_id)
-            meta = {
-                'last_updated': firestore.SERVER_TIMESTAMP,
-                'last_query': user_query[:50] + "..." if len(user_query) > 50 else user_query
-            }
-            if user_id:
-                meta['user_id'] = user_id
-            
-            # Use merge=True so we don't overwrite the initial title
-            conv_ref.set(meta, merge=True)
-            
-            # Set title only if it doesn't exist (first message)
-            snapshot = conv_ref.get()
-            if not snapshot.exists or 'title' not in snapshot.to_dict():
-                conv_ref.update({'title': user_query[:40] + "..." if len(user_query) > 40 else user_query})
+            logger.info(f"✅ Message saved to Firestore for conversation {conversation_id}")
 
         except Exception as e:
             logger.error(f"Error saving message to Firestore: {e}")

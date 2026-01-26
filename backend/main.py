@@ -414,9 +414,23 @@ async def get_user_conversations(user_id: str):
     if not rag_pipeline or not rag_pipeline.memory:
         return []
     
-    conversations = await asyncio.to_thread(
+    raw_convs = await asyncio.to_thread(
         rag_pipeline.memory.get_user_conversations, user_id
     )
+    
+    # Ensure timestamps are JSON serializable
+    conversations = []
+    for c in raw_convs:
+        ts = c.get('last_updated')
+        # Convert Firestore timestamp to numeric milliseconds
+        numeric_ts = int(ts.timestamp() * 1000) if hasattr(ts, 'timestamp') else 0
+        
+        conversations.append({
+            "id": c['id'],
+            "title": c['title'],
+            "last_updated": numeric_ts
+        })
+        
     return conversations
 
 @app.get("/conversations/{conversation_id}/history")

@@ -240,12 +240,12 @@ const App: React.FC = () => {
             <button
               key={conv.id}
               onClick={() => loadConversation(conv.id)}
-              className={`w-full text-left px-4 py-3 rounded-xl transition-all group relative ${currentConversationId === conv.id
+              className={`w-full text-left px-4 py-3 rounded-xl transition-all group relative cursor-pointer z-10 ${currentConversationId === conv.id
                 ? 'bg-teal-50 text-teal-900 shadow-sm border border-teal-100'
-                : 'hover:bg-slate-50 text-slate-500'
+                : 'hover:bg-slate-50 text-slate-500 hover:text-slate-900'
                 }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 pointer-events-none">
                 <div className={`w-1.5 h-1.5 rounded-full ${currentConversationId === conv.id ? 'bg-teal-500' : 'bg-slate-300'}`}></div>
                 <p className="text-xs font-bold truncate max-w-[160px]">{conv.title}</p>
               </div>
