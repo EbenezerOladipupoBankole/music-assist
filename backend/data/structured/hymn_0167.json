@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 167,
+  "title": "Come, Let Us Sing an Evening Hymn",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Tracy Y. Cannon",
+  "text_author": "William W. Phelps",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 167: Come, Let Us Sing an Evening Hymn\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Tracy Y. Cannon\nLyricist/Text Author: William W. Phelps\nCategory: Special Topics\n\nThis is hymn number 167 titled \"Come, Let Us Sing an Evening Hymn\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Tracy Y. Cannon and the lyrics were written by William W. Phelps.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

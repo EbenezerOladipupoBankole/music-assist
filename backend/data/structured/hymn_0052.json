@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 52,
+  "title": "The Day Dawn Is Breaking",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Leroy J. Robertson",
+  "text_author": "Joseph L. Townsend",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 52: The Day Dawn Is Breaking\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Leroy J. Robertson\nLyricist/Text Author: Joseph L. Townsend\nCategory: Praise to the Lord\n\nThis is hymn number 52 titled \"The Day Dawn Is Breaking\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Leroy J. Robertson and the lyrics were written by Joseph L. Townsend.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

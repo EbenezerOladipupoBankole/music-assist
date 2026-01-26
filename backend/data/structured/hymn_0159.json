@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 159,
+  "title": "Now the Day Is Over",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Joseph Barnby",
+  "text_author": "Sabine Baring-Gould",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 159: Now the Day Is Over\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Joseph Barnby\nLyricist/Text Author: Sabine Baring-Gould\nCategory: Special Topics\n\nThis is hymn number 159 titled \"Now the Day Is Over\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Joseph Barnby and the lyrics were written by Sabine Baring-Gould.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

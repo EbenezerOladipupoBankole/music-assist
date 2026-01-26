@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 20,
+  "title": "God of Power, God of Right",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Tracy Y. Cannon",
+  "text_author": "Wallace F. Bennett",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 20: God of Power, God of Right\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Tracy Y. Cannon\nLyricist/Text Author: Wallace F. Bennett\nCategory: Restoration\n\nThis is hymn number 20 titled \"God of Power, God of Right\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Tracy Y. Cannon and the lyrics were written by Wallace F. Bennett.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

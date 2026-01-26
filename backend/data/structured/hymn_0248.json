@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 248,
+  "title": "Up, Awake, Ye Defenders of Zion",
+  "time_signature": "6/8",
+  "key": "Bb Major",
+  "composer": "Thomas E. Daniels",
+  "text_author": "Charles W. Penrose",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 248: Up, Awake, Ye Defenders of Zion\nTime Signature: 6/8\nMusical Key: B-flat Major\nComposer: Thomas E. Daniels\nLyricist/Text Author: Charles W. Penrose\nCategory: Special Topics\n\nThis is hymn number 248 titled \"Up, Awake, Ye Defenders of Zion\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 6/8 time signature. \nThe music was composed by Thomas E. Daniels and the lyrics were written by Charles W. Penrose.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

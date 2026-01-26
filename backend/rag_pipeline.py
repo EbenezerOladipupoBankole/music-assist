@@ -526,26 +526,50 @@ Answer:"""
             raise PermissionError("The knowledge base cannot be modified at runtime in this environment.")
 
         try:
-            crawled_dir = "./data/crawled"
-            
-            if not os.path.exists(crawled_dir):
-                raise ValueError(f"Crawled data directory not found: {crawled_dir}")
-            
+            # Directories to search for data
+            data_dirs = ["./data/crawled", "./data/structured", "./data/music_theory"]
             documents = []
             
-            # Load all crawled JSON files
-            for filename in os.listdir(crawled_dir):
-                if filename.endswith(".json"):
-                    with open(os.path.join(crawled_dir, filename), 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                        documents.append({
-                            "content": data.get("content", ""),
-                            "metadata": {
-                                "source": data.get("url", ""),
-                                "title": data.get("title", ""),
-                                "timestamp": data.get("timestamp", "")
-                            }
-                        })
+            for d in data_dirs:
+                if not os.path.exists(d):
+                    logger.warning(f"Directory not found during rebuild: {d}")
+                    continue
+                
+                logger.info(f"Processing files from {d}...")
+                for filename in os.listdir(d):
+                    if filename.endswith(".json"):
+                        try:
+                            with open(os.path.join(d, filename), 'r', encoding='utf-8') as f:
+                                data = json.load(f)
+                                
+                                # Extract content based on format (structured vs crawled)
+                                content = ""
+                                metadata = {"source_file": filename, "directory": d}
+                                
+                                if "searchable_content" in data:
+                                    # Structured hymn metadata
+                                    content = data["searchable_content"]
+                                    metadata.update({
+                                        "title": data.get("title", ""),
+                                        "number": data.get("number", 0),
+                                        "type": "hymn_metadata"
+                                    })
+                                elif "content" in data:
+                                    # Standard crawled document
+                                    content = data["content"]
+                                    metadata.update({
+                                        "source": data.get("url", ""),
+                                        "title": data.get("title", ""),
+                                        "timestamp": data.get("timestamp", "")
+                                    })
+                                
+                                if content and len(content) > 10:
+                                    documents.append({
+                                        "content": content,
+                                        "metadata": metadata
+                                    })
+                        except Exception as file_error:
+                            logger.error(f"Error reading file {filename} in {d}: {file_error}")
             
             if not documents:
                 raise ValueError("No documents found to index")
@@ -675,23 +699,28 @@ Answer:"""
     
     def _should_search_web(self, query: str, local_docs: List[Document]) -> bool:
         """
-        Highly conservative web search logic to prioritize speed.
+        Balanced web search logic.
         """
-        # No local docs → only then consider web
+        # 1. No local docs → search web
         if not local_docs:
             return True
         
-        # If we have any documents, analyze if it's a "who is" question which often needs web data
+        # 2. Local docs are too brief → search web for more detail
+        avg_length = sum(len(doc.page_content) for doc in local_docs) / len(local_docs)
+        if avg_length < 500:
+            return True
+
+        # 3. Person specific queries often need web data for biographies
         query_lower = query.lower()
-        is_person_query = any(ind in query_lower for ind in ['who is', 'biography', 'composer', 'arranger'])
-        
-        if is_person_query:
-            # Only search web for people if result quality is very low
-            avg_length = sum(len(doc.page_content) for doc in local_docs[:2]) / 2
-            if avg_length < 300:
+        if any(ind in query_lower for ind in ['who is', 'biography', 'composer', 'arranger']):
+            # Only skip if we have very high quality local biography (unlikely)
+            if avg_length < 1500:
                 return True
                 
-        # For everything else, if we have local docs, skip web for speed
+        # 4. Explicit requests for web search
+        if "google" in query_lower or "online" in query_lower or "latest" in query_lower:
+            return True
+
         return False
     
     def _calculate_confidence(self, local_docs: List[Document], web_results: List[Dict], query: str) -> str:
@@ -733,9 +762,12 @@ Answer:"""
     def _add_confidence_disclaimer(self, response: str, confidence: str, web_results: List[Dict]) -> str:
         """
         Add appropriate confidence disclaimer to the response.
-        
-        This helps users understand the reliability of the information.
         """
+        # CRITICAL: Do not add disclaimers for simple hymn title responses
+        # (Usually bolded and very short)
+        if len(response) < 60 and "**" in response:
+            return response
+
         if confidence == "low":
             disclaimer = (
                 "\n\n---\n"
@@ -857,9 +889,10 @@ Answer:"""
 {conversation_context}
 RULES:
 1. Use CONTEXT below as your only source
-2. Be direct - give specific numbers, names, and handbook sections
-3. Use lists (<ul>, <li>) where possible
-4. Under 100 words
+2. If asked 'what is hymn X' or 'which hymn is number X', respond with ONLY the TITLE of the hymn in bold, nothing else.
+3. For general questions, be direct - give specific numbers, names, and handbook sections
+4. Use lists (<ul>, <li>) where possible
+5. Under 100 words
 
 CONTEXT:
 {context}

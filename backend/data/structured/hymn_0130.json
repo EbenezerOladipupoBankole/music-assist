@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 130,
+  "title": "Be Thou Humble",
+  "time_signature": "3/4",
+  "key": "Eb Major",
+  "composer": "Grietje Terburg Rowley",
+  "text_author": "Grietje Terburg Rowley",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 130: Be Thou Humble\nTime Signature: 3/4\nMusical Key: E-flat Major\nComposer: Grietje Terburg Rowley\nLyricist/Text Author: Grietje Terburg Rowley\nCategory: Special Topics\n\nThis is hymn number 130 titled \"Be Thou Humble\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 3/4 time signature. \nThe music was composed by Grietje Terburg Rowley and the lyrics were written by Grietje Terburg Rowley.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

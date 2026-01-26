@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 334,
+  "title": "I Need Thee Every Hour",
+  "time_signature": "3/4",
+  "key": "Ab Major",
+  "composer": "Robert Lowry",
+  "text_author": "Annie S. Hawks",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 334: I Need Thee Every Hour\nTime Signature: 3/4\nMusical Key: A-flat Major\nComposer: Robert Lowry\nLyricist/Text Author: Annie S. Hawks\nCategory: Special Topics\n\nThis is hymn number 334 titled \"I Need Thee Every Hour\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 3/4 time signature. \nThe music was composed by Robert Lowry and the lyrics were written by Annie S. Hawks.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

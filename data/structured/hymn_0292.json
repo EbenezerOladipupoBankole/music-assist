@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 292,
+  "title": "O My Father",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "James McGranahan",
+  "text_author": "Eliza R. Snow",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 292: O My Father\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: James McGranahan\nLyricist/Text Author: Eliza R. Snow\nCategory: Special Topics\n\nThis is hymn number 292 titled \"O My Father\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by James McGranahan and the lyrics were written by Eliza R. Snow.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

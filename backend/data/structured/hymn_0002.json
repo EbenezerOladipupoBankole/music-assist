@@ -1,0 +1,15 @@
+{
+  "type": "hymn_metadata",
+  "number": 2,
+  "title": "The Spirit of God",
+  "time_signature": "4/4",
+  "key": "A Major",
+  "composer": "Traditional English melody, arranged by various",
+  "text_author": "William W. Phelps",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 2: The Spirit of God\nTime Signature: 4/4\nMusical Key: A Major\nComposer: Anonymous\nLyricist/Text Author: William W. Phelps\nCategory: Restoration\n\nThis is hymn number 2 titled \"The Spirit of God\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A Major with a 4/4 time signature. \nThe music was composed by Anonymous and the lyrics were written by William W. Phelps.\nThis hymn is categorized under: Restoration.",
+  "data_notes": "Traditional melody, multiple arrangements exist",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Corrected composer: 'Anonymous' -> 'Traditional English melody, arranged by various'"
+}

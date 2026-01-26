@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 92,
+  "title": "For the Beauty of the Earth",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Conrad Kocher",
+  "text_author": "Folliott S. Pierpoint",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 92: For the Beauty of the Earth\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Conrad Kocher\nLyricist/Text Author: Folliott S. Pierpoint\nCategory: Praise to the Lord\n\nThis is hymn number 92 titled \"For the Beauty of the Earth\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Conrad Kocher and the lyrics were written by Folliott S. Pierpoint.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

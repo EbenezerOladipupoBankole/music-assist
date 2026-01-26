@@ -34,7 +34,7 @@ rag_pipeline = None
 hymn_player = None
 audio_cache = None
 
-# No Firebase needed anymore - using SQLite for conversation storage!
+# Using SQLite for memory and Local Disk for audio cache - No Cloud needed!
 
 from rag_pipeline import RAGPipeline
 from hymn_player import HymnPlayer
@@ -44,14 +44,13 @@ from audio_manager import AudioCacheManager
 async def lifespan(app: FastAPI):
     global rag_pipeline, hymn_player, audio_cache
     
-    # 1. Init Audio (Fail-safe)
+    # 1. Init Local Audio Cache
     try:
         audio_cache = AudioCacheManager()
     except Exception as e:
         print(f"[ERROR] AudioCache failed: {e}")
-        audio_cache = None
 
-    # 2. Init RAG (Fail-safe)
+    # 2. Init RAG (SQLite Memory inside)
     try:
         rag_pipeline = RAGPipeline(
             vector_db_path=os.getenv("VECTOR_DB_PATH", "./data/vector_store"),
@@ -61,23 +60,21 @@ async def lifespan(app: FastAPI):
         print("[OK] RAG & Memory Ready")
     except Exception as e:
         print(f"[ERROR] RAG initialization failed: {e}")
-        rag_pipeline = None
 
-    # 3. Init Hymns (Fail-safe)
+    # 3. Init Hymn Data
     try:
         hymn_player = HymnPlayer()
         print(f"[OK] HymnPlayer Ready")
     except Exception as e:
-        print(f"[ERROR] HymnPlayer initialization failed: {e}")
-        hymn_player = None
+        print(f"[ERROR] HymnPlayer failed: {e}")
 
     yield
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Music-Assist API",
-    description="RAG-powered chatbot for LDS music theory",
-    version="1.0.0",
+    description="Offline-ready RAG chatbot for Church music",
+    version="1.1.0",
     lifespan=lifespan
 )
 
@@ -165,11 +162,11 @@ class ChatResponse(BaseModel):
 @app.get("/audio/hymn/{number}")
 async def get_hymn_audio(number: int):
     """
-    Proxies audio from the official CDN to bypass CORS and security blocks.
-    This guarantees playback on all devices.
+    Retrieves hymn audio from LOCAL CACHE.
+    Downloads once, serves many times. Faster and reliable.
     """
-    if not hymn_player:
-        raise HTTPException(status_code=503, detail="Hymn player not initialized")
+    if not (hymn_player and audio_cache):
+        raise HTTPException(status_code=503, detail="Audio system not ready")
     
     # Find the hymn
     hymns = hymn_player.get_hymns(str(number))
@@ -179,19 +176,30 @@ async def get_hymn_audio(number: int):
     h = hymns[0]
     source_url = h['url']
     
+    from fastapi.responses import FileResponse, StreamingResponse
+    import requests
+
+    # 1. Try to get from local disk
     try:
-        import requests
-        from fastapi.responses import StreamingResponse
-        
+        local_path = await asyncio.to_thread(audio_cache.get_local_path, h['number'], source_url)
+        if local_path and os.path.exists(local_path):
+            logger.info(f"🔊 Serving Hymn {number} from Local Disk")
+            return FileResponse(local_path, media_type="audio/mpeg")
+    except Exception as e:
+        logger.warning(f"Local cache failed for hymn {number}: {e}")
+
+    # 2. Extreme Fallback: Proxy direct from source if disk fails
+    try:
         def iterfile():
             with requests.get(source_url, stream=True, timeout=15) as r:
                 r.raise_for_status()
-                for chunk in r.iter_content(chunk_size=1024*1024): # 1MB chunks
+                for chunk in r.iter_content(chunk_size=1024*1024):
                     yield chunk
         
+        logger.info(f"🔄 Proxying Hymn {number} from official source (Disk Fallback)")
         return StreamingResponse(iterfile(), media_type="audio/mpeg")
     except Exception as e:
-        print(f"[Error] Audio proxy failed for Hymn {number}: {e}")
+        logger.error(f"Audio proxy failed for Hymn {number}: {e}")
         raise HTTPException(status_code=500, detail="Could not retrieve audio")
 
 class HealthResponse(BaseModel):

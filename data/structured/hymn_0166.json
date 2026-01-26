@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 166,
+  "title": "Abide with Me!",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "William H. Monk",
+  "text_author": "Henry F. Lyte",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 166: Abide with Me!\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: William H. Monk\nLyricist/Text Author: Henry F. Lyte\nCategory: Special Topics\n\nThis is hymn number 166 titled \"Abide with Me!\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by William H. Monk and the lyrics were written by Henry F. Lyte.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

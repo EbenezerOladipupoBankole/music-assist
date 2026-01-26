@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 125,
+  "title": "How Gentle God's Commands",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Hans Georg Nägeli",
+  "text_author": "Philip Doddridge",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 125: How Gentle God's Commands\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Hans Georg Nägeli\nLyricist/Text Author: Philip Doddridge\nCategory: Special Topics\n\nThis is hymn number 125 titled \"How Gentle God's Commands\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Hans Georg Nägeli and the lyrics were written by Philip Doddridge.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

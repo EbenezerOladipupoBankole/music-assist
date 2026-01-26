@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 14,
+  "title": "Sweet Is the Peace the Gospel Brings",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Alfred M. Durham",
+  "text_author": "Mary Ann Morton",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 14: Sweet Is the Peace the Gospel Brings\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Alfred M. Durham\nLyricist/Text Author: Mary Ann Morton\nCategory: Restoration\n\nThis is hymn number 14 titled \"Sweet Is the Peace the Gospel Brings\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Alfred M. Durham and the lyrics were written by Mary Ann Morton.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

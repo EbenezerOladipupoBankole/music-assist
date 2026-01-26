@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 315,
+  "title": "Jesus, the Very Thought of Thee",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Lowell Mason",
+  "text_author": "Bernard of Clairvaux",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 315: Jesus, the Very Thought of Thee\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Lowell Mason\nLyricist/Text Author: Bernard of Clairvaux\nCategory: Special Topics\n\nThis is hymn number 315 titled \"Jesus, the Very Thought of Thee\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Lowell Mason and the lyrics were written by Bernard of Clairvaux.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

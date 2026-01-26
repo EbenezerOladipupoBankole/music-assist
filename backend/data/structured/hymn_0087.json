@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 87,
+  "title": "God Is Love",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Thomas D. Terry",
+  "text_author": "Thomas R. Taylor",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 87: God Is Love\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Thomas D. Terry\nLyricist/Text Author: Thomas R. Taylor\nCategory: Praise to the Lord\n\nThis is hymn number 87 titled \"God Is Love\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Thomas D. Terry and the lyrics were written by Thomas R. Taylor.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 326,
+  "title": "Come, Come, Ye Saints",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "English folk song",
+  "text_author": "William Clayton",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 326: Come, Come, Ye Saints\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: English folk song\nLyricist/Text Author: William Clayton\nCategory: Special Topics\n\nThis is hymn number 326 titled \"Come, Come, Ye Saints\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by English folk song and the lyrics were written by William Clayton.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 261,
+  "title": "Thy Servants Are Prepared",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Darwin K. Wolford",
+  "text_author": "Darwin K. Wolford",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 261: Thy Servants Are Prepared\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Darwin K. Wolford\nLyricist/Text Author: Darwin K. Wolford\nCategory: Special Topics\n\nThis is hymn number 261 titled \"Thy Servants Are Prepared\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Darwin K. Wolford and the lyrics were written by Darwin K. Wolford.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

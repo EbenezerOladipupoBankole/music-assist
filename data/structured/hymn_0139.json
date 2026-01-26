@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 139,
+  "title": "In Fasting We Approach Thee",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Clayson Jones",
+  "text_author": "Paul L. Anderson",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 139: In Fasting We Approach Thee\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Clayson Jones\nLyricist/Text Author: Paul L. Anderson\nCategory: Special Topics\n\nThis is hymn number 139 titled \"In Fasting We Approach Thee\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Clayson Jones and the lyrics were written by Paul L. Anderson.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

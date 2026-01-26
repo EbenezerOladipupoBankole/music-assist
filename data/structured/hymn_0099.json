@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 99,
+  "title": "Nearer, Dear Savior, to Thee",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Joseph J. Daynes",
+  "text_author": "Joseph L. Townsend",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 99: Nearer, Dear Savior, to Thee\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Joseph J. Daynes\nLyricist/Text Author: Joseph L. Townsend\nCategory: Prayer and Supplication\n\nThis is hymn number 99 titled \"Nearer, Dear Savior, to Thee\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Joseph J. Daynes and the lyrics were written by Joseph L. Townsend.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 195,
+  "title": "How Great the Wisdom and the Love",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Thomas McIntyre",
+  "text_author": "Eliza R. Snow",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 195: How Great the Wisdom and the Love\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Thomas McIntyre\nLyricist/Text Author: Eliza R. Snow\nCategory: Sacrament\n\nThis is hymn number 195 titled \"How Great the Wisdom and the Love\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Thomas McIntyre and the lyrics were written by Eliza R. Snow.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

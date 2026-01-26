@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 254,
+  "title": "True to the Faith",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Evan Stephens",
+  "text_author": "Evan Stephens",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 254: True to the Faith\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Evan Stephens\nLyricist/Text Author: Evan Stephens\nCategory: Special Topics\n\nThis is hymn number 254 titled \"True to the Faith\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Evan Stephens and the lyrics were written by Evan Stephens.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

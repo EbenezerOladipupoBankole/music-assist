@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 320,
+  "title": "The Priesthood of Our Lord",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Robert P. Manookin",
+  "text_author": "Gordon B. Hinckley",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 320: The Priesthood of Our Lord\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Robert P. Manookin\nLyricist/Text Author: Gordon B. Hinckley\nCategory: Special Topics\n\nThis is hymn number 320 titled \"The Priesthood of Our Lord\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Robert P. Manookin and the lyrics were written by Gordon B. Hinckley.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

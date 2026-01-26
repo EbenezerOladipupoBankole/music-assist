@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 86,
+  "title": "How Great Thou Art",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Swedish folk melody",
+  "text_author": "Carl Boberg",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 86: How Great Thou Art\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Swedish folk melody\nLyricist/Text Author: Carl Boberg\nCategory: Praise to the Lord\n\nThis is hymn number 86 titled \"How Great Thou Art\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Swedish folk melody and the lyrics were written by Carl Boberg.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

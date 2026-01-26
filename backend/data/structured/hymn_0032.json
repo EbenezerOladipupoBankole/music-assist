@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 32,
+  "title": "The Happy Day at Last Has Come",
+  "time_signature": "3/4",
+  "key": "Ab Major",
+  "composer": "A. C. Smyth",
+  "text_author": "Philo Dibble",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 32: The Happy Day at Last Has Come\nTime Signature: 3/4\nMusical Key: A-flat Major\nComposer: A. C. Smyth\nLyricist/Text Author: Philo Dibble\nCategory: Praise to the Lord\n\nThis is hymn number 32 titled \"The Happy Day at Last Has Come\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 3/4 time signature. \nThe music was composed by A. C. Smyth and the lyrics were written by Philo Dibble.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

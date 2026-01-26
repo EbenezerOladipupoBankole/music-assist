@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 19,
+  "title": "We Thank Thee, O God, for a Prophet",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "William Fowler",
+  "text_author": "William Fowler",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 19: We Thank Thee, O God, for a Prophet\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: William Fowler\nLyricist/Text Author: William Fowler\nCategory: Restoration\n\nThis is hymn number 19 titled \"We Thank Thee, O God, for a Prophet\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by William Fowler and the lyrics were written by William Fowler.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

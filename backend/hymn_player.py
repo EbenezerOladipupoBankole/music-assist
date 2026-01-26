@@ -16,19 +16,19 @@ class HymnPlayer:
             {
                 "title": "The Morning Breaks",
                 "number": 1,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/001-the-morning-breaks-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/001-the-morning-breaks-vocal-64k-eng.mp3",
                 "tags": ["morning", "opening"]
             },
             {
                 "title": "The Spirit of God",
                 "number": 2,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/002-the-spirit-of-god-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/002-the-spirit-of-god-vocal-64k-eng.mp3",
                 "tags": ["opening", "restoration"]
             },
             {
                 "title": "High on the Mountain Top",
                 "number": 5,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/005-high-on-the-mountain-top-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/005-high-on-the-mountain-top-vocal-64k-eng.mp3",
                 "tags": ["opening", "restoration"]
             },
             {
@@ -82,19 +82,19 @@ class HymnPlayer:
             {
                 "title": "I Stand All Amazed",
                 "number": 193,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/193-i-stand-all-amazed-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/193-i-stand-all-amazed-vocal-64k-eng.mp3",
                 "tags": ["sacrament", "savior", "atonement"]
             },
             {
                 "title": "There Is a Green Hill Far Away",
                 "number": 194,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/194-there-is-a-green-hill-far-away-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/194-there-is-a-green-hill-far-away-vocal-64k-eng.mp3",
                 "tags": ["sacrament", "savior", "atonement"]
             },
             {
                 "title": "I Am a Child of God",
                 "number": 301,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/301-i-am-child-of-god-words-and-music-128k-eng.mp3",
+                "url": "https://media2.ldscdn.org/audio/music/childrens-songbook/childrens-songbook-eng/301-i-am-a-child-of-god-vocal-64k-eng.mp3",
                 "tags": ["children", "family"]
             }
         ]

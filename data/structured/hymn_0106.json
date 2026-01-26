@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 106,
+  "title": "God Speed the Right",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Evan Stephens",
+  "text_author": "Evan Stephens",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 106: God Speed the Right\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Evan Stephens\nLyricist/Text Author: Evan Stephens\nCategory: Prayer and Supplication\n\nThis is hymn number 106 titled \"God Speed the Right\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Evan Stephens and the lyrics were written by Evan Stephens.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

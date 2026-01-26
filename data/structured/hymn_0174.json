@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 174,
+  "title": "While of These Emblems We Partake",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Robert P. Manookin",
+  "text_author": "John Nicholson",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 174: While of These Emblems We Partake\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Robert P. Manookin\nLyricist/Text Author: John Nicholson\nCategory: Sacrament\n\nThis is hymn number 174 titled \"While of These Emblems We Partake\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Robert P. Manookin and the lyrics were written by John Nicholson.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

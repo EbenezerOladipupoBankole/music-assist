@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 340,
+  "title": "The Star-Spangled Banner",
+  "time_signature": "3/4",
+  "key": "Bb Major",
+  "composer": "John Stafford Smith",
+  "text_author": "Francis Scott Key",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 340: The Star-Spangled Banner\nTime Signature: 3/4\nMusical Key: B-flat Major\nComposer: John Stafford Smith\nLyricist/Text Author: Francis Scott Key\nCategory: Special Topics\n\nThis is hymn number 340 titled \"The Star-Spangled Banner\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 3/4 time signature. \nThe music was composed by John Stafford Smith and the lyrics were written by Francis Scott Key.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

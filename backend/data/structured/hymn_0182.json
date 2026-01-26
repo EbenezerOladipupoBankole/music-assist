@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 182,
+  "title": "We'll Sing All Hail to Jesus' Name",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Evan Stephens",
+  "text_author": "Richard Alldridge",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 182: We'll Sing All Hail to Jesus' Name\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Evan Stephens\nLyricist/Text Author: Richard Alldridge\nCategory: Sacrament\n\nThis is hymn number 182 titled \"We'll Sing All Hail to Jesus' Name\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Evan Stephens and the lyrics were written by Richard Alldridge.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

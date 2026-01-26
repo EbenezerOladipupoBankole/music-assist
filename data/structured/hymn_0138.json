@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 138,
+  "title": "Bless Our Fast, We Pray",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "John Longhurst",
+  "text_author": "John Nicholson",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 138: Bless Our Fast, We Pray\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: John Longhurst\nLyricist/Text Author: John Nicholson\nCategory: Special Topics\n\nThis is hymn number 138 titled \"Bless Our Fast, We Pray\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by John Longhurst and the lyrics were written by John Nicholson.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

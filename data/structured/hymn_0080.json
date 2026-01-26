@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 80,
+  "title": "God of Nations, Near and Far",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Tracy Y. Cannon",
+  "text_author": "John Taylor",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 80: God of Nations, Near and Far\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Tracy Y. Cannon\nLyricist/Text Author: John Taylor\nCategory: Praise to the Lord\n\nThis is hymn number 80 titled \"God of Nations, Near and Far\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Tracy Y. Cannon and the lyrics were written by John Taylor.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

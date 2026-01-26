@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 105,
+  "title": "Master, the Tempest Is Raging",
+  "time_signature": "6/8",
+  "key": "Ab Major",
+  "composer": "H. R. Palmer",
+  "text_author": "Mary Ann Baker",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 105: Master, the Tempest Is Raging\nTime Signature: 6/8\nMusical Key: A-flat Major\nComposer: H. R. Palmer\nLyricist/Text Author: Mary Ann Baker\nCategory: Prayer and Supplication\n\nThis is hymn number 105 titled \"Master, the Tempest Is Raging\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 6/8 time signature. \nThe music was composed by H. R. Palmer and the lyrics were written by Mary Ann Baker.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 299,
+  "title": "Children of Our Heavenly Father",
+  "time_signature": "3/4",
+  "key": "Bb Major",
+  "composer": "Swedish folk song",
+  "text_author": "Carolina Sandell Berg",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 299: Children of Our Heavenly Father\nTime Signature: 3/4\nMusical Key: B-flat Major\nComposer: Swedish folk song\nLyricist/Text Author: Carolina Sandell Berg\nCategory: Special Topics\n\nThis is hymn number 299 titled \"Children of Our Heavenly Father\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 3/4 time signature. \nThe music was composed by Swedish folk song and the lyrics were written by Carolina Sandell Berg.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

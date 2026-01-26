@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 307,
+  "title": "In Our Lovely Deseret",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Ebenezer Beesley",
+  "text_author": "Eliza R. Snow",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 307: In Our Lovely Deseret\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Ebenezer Beesley\nLyricist/Text Author: Eliza R. Snow\nCategory: Special Topics\n\nThis is hymn number 307 titled \"In Our Lovely Deseret\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Ebenezer Beesley and the lyrics were written by Eliza R. Snow.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

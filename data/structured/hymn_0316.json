@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 316,
+  "title": "The Lord Is My Shepherd",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "James L. Leland",
+  "text_author": "James Montgomery",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 316: The Lord Is My Shepherd\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: James L. Leland\nLyricist/Text Author: James Montgomery\nCategory: Special Topics\n\nThis is hymn number 316 titled \"The Lord Is My Shepherd\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by James L. Leland and the lyrics were written by James Montgomery.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

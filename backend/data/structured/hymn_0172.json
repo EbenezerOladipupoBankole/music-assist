@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 172,
+  "title": "In Humility, Our Savior",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Rowland H. Prichard",
+  "text_author": "Mabel Jones Gabbott",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 172: In Humility, Our Savior\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Rowland H. Prichard\nLyricist/Text Author: Mabel Jones Gabbott\nCategory: Sacrament\n\nThis is hymn number 172 titled \"In Humility, Our Savior\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Rowland H. Prichard and the lyrics were written by Mabel Jones Gabbott.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

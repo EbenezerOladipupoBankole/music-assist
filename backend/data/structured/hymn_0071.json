@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 71,
+  "title": "With Songs of Praise",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Aaron Williams",
+  "text_author": "Jane Eliza Cross",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 71: With Songs of Praise\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Aaron Williams\nLyricist/Text Author: Jane Eliza Cross\nCategory: Praise to the Lord\n\nThis is hymn number 71 titled \"With Songs of Praise\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Aaron Williams and the lyrics were written by Jane Eliza Cross.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

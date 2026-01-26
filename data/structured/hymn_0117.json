@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 117,
+  "title": "Come unto Jesus",
+  "time_signature": "6/8",
+  "key": "Bb Major",
+  "composer": "Orson Pratt Huish",
+  "text_author": "Orson Pratt Huish",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 117: Come unto Jesus\nTime Signature: 6/8\nMusical Key: B-flat Major\nComposer: Orson Pratt Huish\nLyricist/Text Author: Orson Pratt Huish\nCategory: Prayer and Supplication\n\nThis is hymn number 117 titled \"Come unto Jesus\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 6/8 time signature. \nThe music was composed by Orson Pratt Huish and the lyrics were written by Orson Pratt Huish.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

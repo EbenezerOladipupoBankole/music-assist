@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 179,
+  "title": "Again, Our Dear Redeeming Lord",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Robert Price",
+  "text_author": "Theodore E. Curtis",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 179: Again, Our Dear Redeeming Lord\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Robert Price\nLyricist/Text Author: Theodore E. Curtis\nCategory: Sacrament\n\nThis is hymn number 179 titled \"Again, Our Dear Redeeming Lord\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Robert Price and the lyrics were written by Theodore E. Curtis.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

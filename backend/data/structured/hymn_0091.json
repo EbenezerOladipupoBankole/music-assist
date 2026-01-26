@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 91,
+  "title": "Father, Thy Children to Thee Now Raise",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Evan Stephens",
+  "text_author": "Evan Stephens",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 91: Father, Thy Children to Thee Now Raise\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Evan Stephens\nLyricist/Text Author: Evan Stephens\nCategory: Praise to the Lord\n\nThis is hymn number 91 titled \"Father, Thy Children to Thee Now Raise\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Evan Stephens and the lyrics were written by Evan Stephens.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

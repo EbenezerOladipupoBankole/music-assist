@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 22,
+  "title": "We Listen to a Prophet's Voice",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Darwin K. Wolford",
+  "text_author": "Marylou Cunningham Leavitt",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 22: We Listen to a Prophet's Voice\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Darwin K. Wolford\nLyricist/Text Author: Marylou Cunningham Leavitt\nCategory: Restoration\n\nThis is hymn number 22 titled \"We Listen to a Prophet's Voice\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Darwin K. Wolford and the lyrics were written by Marylou Cunningham Leavitt.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 155,
+  "title": "We Have Partaken of Thy Love",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "George Careless",
+  "text_author": "George Manwaring",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 155: We Have Partaken of Thy Love\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: George Careless\nLyricist/Text Author: George Manwaring\nCategory: Special Topics\n\nThis is hymn number 155 titled \"We Have Partaken of Thy Love\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by George Careless and the lyrics were written by George Manwaring.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

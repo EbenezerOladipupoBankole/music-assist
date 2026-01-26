@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 224,
+  "title": "I Have Work Enough to Do",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Caroline E. Hinckley",
+  "text_author": "Josephine Pollard",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 224: I Have Work Enough to Do\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Caroline E. Hinckley\nLyricist/Text Author: Josephine Pollard\nCategory: Special Topics\n\nThis is hymn number 224 titled \"I Have Work Enough to Do\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Caroline E. Hinckley and the lyrics were written by Josephine Pollard.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 193,
+  "title": "I Stand All Amazed",
+  "time_signature": "3/4",
+  "key": "Bb Major",
+  "composer": "Charles H. Gabriel",
+  "text_author": "Charles H. Gabriel",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 193: I Stand All Amazed\nTime Signature: 3/4\nMusical Key: B-flat Major\nComposer: Charles H. Gabriel\nLyricist/Text Author: Charles H. Gabriel\nCategory: Sacrament\n\nThis is hymn number 193 titled \"I Stand All Amazed\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 3/4 time signature. \nThe music was composed by Charles H. Gabriel and the lyrics were written by Charles H. Gabriel.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 309,
+  "title": "As Sisters in Zion",
+  "time_signature": "3/4",
+  "key": "Ab Major",
+  "composer": "Janice Kapp Perry",
+  "text_author": "Emily H. Woodmansee",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 309: As Sisters in Zion\nTime Signature: 3/4\nMusical Key: A-flat Major\nComposer: Janice Kapp Perry\nLyricist/Text Author: Emily H. Woodmansee\nCategory: Special Topics\n\nThis is hymn number 309 titled \"As Sisters in Zion\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 3/4 time signature. \nThe music was composed by Janice Kapp Perry and the lyrics were written by Emily H. Woodmansee.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

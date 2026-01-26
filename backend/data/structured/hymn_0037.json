@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 37,
+  "title": "The Wintry Day, Descending to Its Close",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Evan Stephens",
+  "text_author": "Orson F. Whitney",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 37: The Wintry Day, Descending to Its Close\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Evan Stephens\nLyricist/Text Author: Orson F. Whitney\nCategory: Praise to the Lord\n\nThis is hymn number 37 titled \"The Wintry Day, Descending to Its Close\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Evan Stephens and the lyrics were written by Orson F. Whitney.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

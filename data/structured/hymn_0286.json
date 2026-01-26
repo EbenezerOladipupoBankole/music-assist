@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 286,
+  "title": "Oh, What Songs of the Heart",
+  "time_signature": "3/4",
+  "key": "Eb Major",
+  "composer": "Joseph J. Daynes",
+  "text_author": "Eliza R. Snow",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 286: Oh, What Songs of the Heart\nTime Signature: 3/4\nMusical Key: E-flat Major\nComposer: Joseph J. Daynes\nLyricist/Text Author: Eliza R. Snow\nCategory: Special Topics\n\nThis is hymn number 286 titled \"Oh, What Songs of the Heart\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 3/4 time signature. \nThe music was composed by Joseph J. Daynes and the lyrics were written by Eliza R. Snow.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

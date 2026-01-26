@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 48,
+  "title": "Glorious Things Are Sung of Zion",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "A. Laurence Lyon",
+  "text_author": "William W. Phelps",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 48: Glorious Things Are Sung of Zion\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: A. Laurence Lyon\nLyricist/Text Author: William W. Phelps\nCategory: Praise to the Lord\n\nThis is hymn number 48 titled \"Glorious Things Are Sung of Zion\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by A. Laurence Lyon and the lyrics were written by William W. Phelps.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

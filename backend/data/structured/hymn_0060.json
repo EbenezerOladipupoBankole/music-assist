@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 60,
+  "title": "Battle Hymn of the Republic",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "William Steffe",
+  "text_author": "Julia Ward Howe",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 60: Battle Hymn of the Republic\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: William Steffe\nLyricist/Text Author: Julia Ward Howe\nCategory: Praise to the Lord\n\nThis is hymn number 60 titled \"Battle Hymn of the Republic\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by William Steffe and the lyrics were written by Julia Ward Howe.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

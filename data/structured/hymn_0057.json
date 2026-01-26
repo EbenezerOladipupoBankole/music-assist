@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 57,
+  "title": "We're Not Ashamed to Own Our Lord",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "David Calder",
+  "text_author": "Isaac Watts",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 57: We're Not Ashamed to Own Our Lord\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: David Calder\nLyricist/Text Author: Isaac Watts\nCategory: Praise to the Lord\n\nThis is hymn number 57 titled \"We're Not Ashamed to Own Our Lord\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by David Calder and the lyrics were written by Isaac Watts.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

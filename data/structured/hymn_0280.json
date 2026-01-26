@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 280,
+  "title": "Welcome, Welcome, Sabbath Morning",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Ebenezer Beesley",
+  "text_author": "Robert B. Baird",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 280: Welcome, Welcome, Sabbath Morning\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Ebenezer Beesley\nLyricist/Text Author: Robert B. Baird\nCategory: Special Topics\n\nThis is hymn number 280 titled \"Welcome, Welcome, Sabbath Morning\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Ebenezer Beesley and the lyrics were written by Robert B. Baird.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

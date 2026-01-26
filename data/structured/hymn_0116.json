@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 116,
+  "title": "Come, Follow Me",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Samuel McBurney",
+  "text_author": "John Nicholson",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 116: Come, Follow Me\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Samuel McBurney\nLyricist/Text Author: John Nicholson\nCategory: Prayer and Supplication\n\nThis is hymn number 116 titled \"Come, Follow Me\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Samuel McBurney and the lyrics were written by John Nicholson.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

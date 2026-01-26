@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 69,
+  "title": "All Glory, Laud, and Honor",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Melchior Teschner",
+  "text_author": "Theodulph of Orleans",
+  "category": "Praise to the Lord",
+  "verified": true,
+  "searchable_content": "Hymn 69: All Glory, Laud, and Honor\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Melchior Teschner\nLyricist/Text Author: Theodulph of Orleans\nCategory: Praise to the Lord\n\nThis is hymn number 69 titled \"All Glory, Laud, and Honor\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Melchior Teschner and the lyrics were written by Theodulph of Orleans.\nThis hymn is categorized under: Praise to the Lord.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

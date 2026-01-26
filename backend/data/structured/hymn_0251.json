@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 251,
+  "title": "Behold! A Royal Army",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Adam Geibel",
+  "text_author": "Fanny J. Crosby",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 251: Behold! A Royal Army\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Adam Geibel\nLyricist/Text Author: Fanny J. Crosby\nCategory: Special Topics\n\nThis is hymn number 251 titled \"Behold! A Royal Army\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Adam Geibel and the lyrics were written by Fanny J. Crosby.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

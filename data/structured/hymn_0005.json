@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 5,
+  "title": "High on the Mountain Top",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "Ebenezer Beesley",
+  "text_author": "Joel H. Johnson",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 5: High on the Mountain Top\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: Ebenezer Beesley\nLyricist/Text Author: Joel H. Johnson\nCategory: Restoration\n\nThis is hymn number 5 titled \"High on the Mountain Top\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by Ebenezer Beesley and the lyrics were written by Joel H. Johnson.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

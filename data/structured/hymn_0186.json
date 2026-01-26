@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 186,
+  "title": "Again We Meet around the Board",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "George Careless",
+  "text_author": "Eliza R. Snow",
+  "category": "Sacrament",
+  "verified": true,
+  "searchable_content": "Hymn 186: Again We Meet around the Board\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: George Careless\nLyricist/Text Author: Eliza R. Snow\nCategory: Sacrament\n\nThis is hymn number 186 titled \"Again We Meet around the Board\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by George Careless and the lyrics were written by Eliza R. Snow.\nThis hymn is categorized under: Sacrament.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

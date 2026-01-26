@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 150,
+  "title": "O Thou Kind and Gracious Father",
+  "time_signature": "3/4",
+  "key": "Ab Major",
+  "composer": "Edwin F. Parry",
+  "text_author": "Charles Denney Jr.",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 150: O Thou Kind and Gracious Father\nTime Signature: 3/4\nMusical Key: A-flat Major\nComposer: Edwin F. Parry\nLyricist/Text Author: Charles Denney Jr.\nCategory: Special Topics\n\nThis is hymn number 150 titled \"O Thou Kind and Gracious Father\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 3/4 time signature. \nThe music was composed by Edwin F. Parry and the lyrics were written by Charles Denney Jr..\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

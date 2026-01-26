@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 235,
+  "title": "Should You Feel Inclined to Censure",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Philip Paul Bliss",
+  "text_author": "Anonymous",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 235: Should You Feel Inclined to Censure\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Philip Paul Bliss\nLyricist/Text Author: Anonymous\nCategory: Special Topics\n\nThis is hymn number 235 titled \"Should You Feel Inclined to Censure\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Philip Paul Bliss and the lyrics were written by Anonymous.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

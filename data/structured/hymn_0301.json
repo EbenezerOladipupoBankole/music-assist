@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 301,
+  "title": "I Am a Child of God",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Mildred Tanner Pettit",
+  "text_author": "Naomi W. Randall",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 301: I Am a Child of God\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Mildred Tanner Pettit\nLyricist/Text Author: Naomi W. Randall\nCategory: Special Topics\n\nThis is hymn number 301 titled \"I Am a Child of God\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Mildred Tanner Pettit and the lyrics were written by Naomi W. Randall.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

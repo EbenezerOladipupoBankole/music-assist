@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 114,
+  "title": "Come unto Him",
+  "time_signature": "4/4",
+  "key": "Ab Major",
+  "composer": "Hugh W. Dougall",
+  "text_author": "Theodore E. Curtis",
+  "category": "Prayer and Supplication",
+  "verified": true,
+  "searchable_content": "Hymn 114: Come unto Him\nTime Signature: 4/4\nMusical Key: A-flat Major\nComposer: Hugh W. Dougall\nLyricist/Text Author: Theodore E. Curtis\nCategory: Prayer and Supplication\n\nThis is hymn number 114 titled \"Come unto Him\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in A-flat Major with a 4/4 time signature. \nThe music was composed by Hugh W. Dougall and the lyrics were written by Theodore E. Curtis.\nThis hymn is categorized under: Prayer and Supplication.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'A-flat Major' -> 'Ab Major'"
+}

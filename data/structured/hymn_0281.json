@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 281,
+  "title": "Help Me Teach with Inspiration",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Lorin F. Wheelwright",
+  "text_author": "Lorin F. Wheelwright",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 281: Help Me Teach with Inspiration\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Lorin F. Wheelwright\nLyricist/Text Author: Lorin F. Wheelwright\nCategory: Special Topics\n\nThis is hymn number 281 titled \"Help Me Teach with Inspiration\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Lorin F. Wheelwright and the lyrics were written by Lorin F. Wheelwright.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

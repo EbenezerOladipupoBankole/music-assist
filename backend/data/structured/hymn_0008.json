@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 8,
+  "title": "Awake and Arise",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Theodore E. Curtis",
+  "text_author": "Theodore E. Curtis",
+  "category": "Restoration",
+  "verified": true,
+  "searchable_content": "Hymn 8: Awake and Arise\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Theodore E. Curtis\nLyricist/Text Author: Theodore E. Curtis\nCategory: Restoration\n\nThis is hymn number 8 titled \"Awake and Arise\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Theodore E. Curtis and the lyrics were written by Theodore E. Curtis.\nThis hymn is categorized under: Restoration.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}

@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 278,
+  "title": "Thanks for the Sabbath School",
+  "time_signature": "4/4",
+  "key": "Bb Major",
+  "composer": "George Careless",
+  "text_author": "George Manwaring",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 278: Thanks for the Sabbath School\nTime Signature: 4/4\nMusical Key: B-flat Major\nComposer: George Careless\nLyricist/Text Author: George Manwaring\nCategory: Special Topics\n\nThis is hymn number 278 titled \"Thanks for the Sabbath School\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in B-flat Major with a 4/4 time signature. \nThe music was composed by George Careless and the lyrics were written by George Manwaring.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'B-flat Major' -> 'Bb Major'"
+}

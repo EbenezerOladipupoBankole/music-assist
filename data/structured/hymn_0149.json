@@ -1,0 +1,14 @@
+{
+  "type": "hymn_metadata",
+  "number": 149,
+  "title": "As the Dew from Heaven Distilling",
+  "time_signature": "4/4",
+  "key": "Eb Major",
+  "composer": "Joseph J. Daynes",
+  "text_author": "Parley P. Pratt",
+  "category": "Special Topics",
+  "verified": true,
+  "searchable_content": "Hymn 149: As the Dew from Heaven Distilling\nTime Signature: 4/4\nMusical Key: E-flat Major\nComposer: Joseph J. Daynes\nLyricist/Text Author: Parley P. Pratt\nCategory: Special Topics\n\nThis is hymn number 149 titled \"As the Dew from Heaven Distilling\" from the Church of Jesus Christ of Latter-day Saints hymnbook. \nIt is written in E-flat Major with a 4/4 time signature. \nThe music was composed by Joseph J. Daynes and the lyrics were written by Parley P. Pratt.\nThis hymn is categorized under: Special Topics.",
+  "last_cleaned": "2026-01-25",
+  "cleaning_notes": "Fixed key format: 'E-flat Major' -> 'Eb Major'"
+}
