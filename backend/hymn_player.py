@@ -16,72 +16,86 @@ class HymnPlayer:
             {
                 "title": "The Morning Breaks",
                 "number": 1,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/001-the-morning-breaks-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/001-the-morning-breaks-words-and-music-128k-eng.mp3",
+                "tags": ["morning", "opening"]
             },
             {
                 "title": "The Spirit of God",
                 "number": 2,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/002-the-spirit-of-god-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/002-the-spirit-of-god-words-and-music-128k-eng.mp3",
+                "tags": ["opening", "restoration"]
             },
             {
                 "title": "High on the Mountain Top",
                 "number": 5,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/005-high-on-the-mountain-top-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/005-high-on-the-mountain-top-words-and-music-128k-eng.mp3",
+                "tags": ["opening", "restoration"]
             },
             {
                 "title": "Redeemer of Israel",
                 "number": 6,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/006-redeemer-of-israel-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/006-redeemer-of-israel-words-and-music-128k-eng.mp3",
+                "tags": ["opening", "savior"]
             },
             {
                 "title": "We Thank Thee, O God, for a Prophet",
                 "number": 19,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/019-we-thank-thee-o-god-for-a-prophet-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/019-we-thank-thee-o-god-for-a-prophet-words-and-music-128k-eng.mp3",
+                "tags": ["prophet", "opening"]
             },
             {
                 "title": "Joseph Smith's First Prayer",
                 "number": 26,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/026-joseph-smiths-first-prayer-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "Come, Come, Ye Saints",
-                "number": 30,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/030-come-come-ye-saints-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "For the Strength of the Hills",
-                "number": 35,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/035-for-the-strength-of-the-hills-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "Lead, Kindly Light",
-                "number": 97,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/097-lead-kindly-light-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "I Know That My Redeemer Lives",
-                "number": 136,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/136-i-know-that-my-redeemer-lives-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "How Firm a Foundation",
-                "number": 85,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/085-how-firm-a-foundation-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "I Am a Child of God",
-                "number": 301,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/301-i-am-a-child-of-god-words-and-music-128k-eng.mp3"
-            },
-            {
-                "title": "God Be with You Till We Meet Again",
-                "number": 152,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/152-god-be-with-you-till-we-meet-again-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/026-joseph-smiths-first-prayer-words-and-music-128k-eng.mp3",
+                "tags": ["restoration", "joseph smith"]
             },
             {
                 "title": "Abide with Me!",
                 "number": 166,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/166-abide-with-me-words-and-music-128k-eng.mp3"
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/166-abide-with-me-words-and-music-128k-eng.mp3",
+                "tags": ["closing", "evening", "comfort"]
+            },
+            {
+                "title": "As Now We Take the Sacrament",
+                "number": 169,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/169-as-now-we-take-the-sacrament-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "worship"]
+            },
+            {
+                "title": "In Humility, Our Savior",
+                "number": 172,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/172-in-humility-our-savior-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "savior", "worship"]
+            },
+            {
+                "title": "Jesus of Nazareth, Savior and King",
+                "number": 181,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/181-jesus-of-nazareth-savior-and-king-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "savior"]
+            },
+            {
+                "title": "Upon the Cross of Calvary",
+                "number": 184,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/184-upon-the-cross-of-calvary-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "savior", "atonement"]
+            },
+            {
+                "title": "I Stand All Amazed",
+                "number": 193,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/193-i-stand-all-amazed-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "savior", "atonement"]
+            },
+            {
+                "title": "There Is a Green Hill Far Away",
+                "number": 194,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/194-there-is-a-green-hill-far-away-words-and-music-128k-eng.mp3",
+                "tags": ["sacrament", "savior", "atonement"]
+            },
+            {
+                "title": "I Am a Child of God",
+                "number": 301,
+                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/301-i-am-child-of-god-words-and-music-128k-eng.mp3",
+                "tags": ["children", "family"]
             }
         ]
         
@@ -104,7 +118,13 @@ class HymnPlayer:
                 if h.get("number") == num:
                     results.append(h)
         
-        # 2. Check for title match (substring)
+        # 2. Check for tag match
+        for h in self.hymns_db:
+            if any(clean_query in tag.lower() for tag in h.get("tags", [])):
+                if h not in results:
+                    results.append(h)
+
+        # 3. Check for title match (substring)
         for h in self.hymns_db:
             if clean_query in h["title"].lower():
                 if h not in results:

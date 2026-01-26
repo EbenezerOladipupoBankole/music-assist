@@ -15,8 +15,13 @@ import sys
 import re
 import random
 import asyncio
+import logging
 import firebase_admin
 from firebase_admin import credentials
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Add current directory to path to ensure local imports (like rag_pipeline) work
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -29,66 +34,42 @@ rag_pipeline = None
 hymn_player = None
 audio_cache = None
 
+# No Firebase needed anymore - using SQLite for conversation storage!
+
+from rag_pipeline import RAGPipeline
+from hymn_player import HymnPlayer
+from audio_manager import AudioCacheManager
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize components on startup"""
     global rag_pipeline, hymn_player, audio_cache
     
-    from rag_pipeline import RAGPipeline
-    from hymn_player import HymnPlayer
-    from audio_manager import AudioCacheManager
-    
-    # Initialize the RAG pipeline
+    # 1. Init Audio (Fail-safe)
+    try:
+        audio_cache = AudioCacheManager()
+    except Exception as e:
+        print(f"[ERROR] AudioCache failed: {e}")
+        audio_cache = None
+
+    # 2. Init RAG (Fail-safe)
     try:
         rag_pipeline = RAGPipeline(
             vector_db_path=os.getenv("VECTOR_DB_PATH", "./data/vector_store"),
-            model_name=os.getenv("LLM_MODEL", "gpt-3.5-turbo")
+            model_name=os.getenv("LLM_MODEL", "gpt-4o-mini")
         )
-        # Load or create vector store
         await rag_pipeline.initialize()
-        print("[OK] RAG Pipeline initialized successfully")
+        print("[OK] RAG & Memory Ready")
     except Exception as e:
-        print(f"[WARNING] RAG Pipeline failed to initialize: {e}")
+        print(f"[ERROR] RAG initialization failed: {e}")
         rag_pipeline = None
 
-    # Initialize Hymn Player
+    # 3. Init Hymns (Fail-safe)
     try:
         hymn_player = HymnPlayer()
-        print(f"[OK] HymnPlayer initialized with {len(hymn_player.known_hymns)} hymns")
+        print(f"[OK] HymnPlayer Ready")
     except Exception as e:
-        print(f"[WARNING] Could not initialize HymnPlayer: {e}")
-
-    # Initialize Firebase Admin
-    try:
-        if not firebase_admin._apps:
-            firebase_json = os.getenv("FIREBASE_CONFIG_JSON")
-            cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "./firebase-key.json")
-            
-            if firebase_json:
-                import json
-                cred_dict = json.loads(firebase_json)
-                cred = credentials.Certificate(cred_dict)
-                firebase_admin.initialize_app(cred, {
-                    'storageBucket': 'music-assists.firebasestorage.app'
-                })
-                print("[OK] Firebase Admin initialized successfully (from Environment Variable)")
-            elif os.path.exists(cred_path):
-                cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred, {
-                    'storageBucket': 'music-assists.firebasestorage.app'
-                })
-                print(f"[OK] Firebase Admin initialized successfully (Local Key: {cred_path})")
-            else:
-                # Fallback to Application Default Credentials
-                firebase_admin.initialize_app(None, {
-                    'storageBucket': 'music-assists.firebasestorage.app'
-                })
-                print("[OK] Firebase Admin initialized successfully (ADC)")
-        
-        # Initialize Audio Cache (after Firebase is up)
-        audio_cache = AudioCacheManager()
-    except Exception as e:
-        print(f"[WARNING] Firebase/Storage failed to initialize: {e}")
+        print(f"[ERROR] HymnPlayer initialization failed: {e}")
+        hymn_player = None
 
     yield
 
@@ -99,6 +80,25 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+@app.get("/debug/memory")
+async def debug_memory():
+    """Diagnostic for conversation memory status"""
+    try:
+        status = {
+            "rag_pipeline": "OK" if rag_pipeline else "MISSING",
+            "memory": "MISSING",
+            "storage_type": "UNKNOWN"
+        }
+        
+        if rag_pipeline and hasattr(rag_pipeline, "memory") and rag_pipeline.memory:
+            status["memory"] = "OK"
+            status["storage_type"] = "SQLite"
+            status["db_path"] = getattr(rag_pipeline.memory, 'db_path', 'Unknown')
+        
+        return status
+    except Exception as e:
+        return {"error": str(e)}
 
 # Define allowed origins
 origins = [
@@ -208,6 +208,17 @@ async def root():
         version="1.0.0"
     )
 
+@app.get("/debug/memory")
+async def debug_memory():
+    """Diagnostic for conversation memory status"""
+    status = {
+        "firebase_apps": [app.name for app in firebase_admin._apps] if firebase_admin._apps else [],
+        "has_rag_pipeline": rag_pipeline is not None,
+        "has_memory": rag_pipeline.memory is not None if rag_pipeline else False,
+        "is_using_firestore": (rag_pipeline.memory.db is not None) if (rag_pipeline and rag_pipeline.memory) else False
+    }
+    return status
+
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
     """Detailed health check"""
@@ -223,13 +234,15 @@ async def chat(message: ChatMessage):
     Main chat endpoint - processes user queries with RAG
     """
     try:
-        # 1. Check for Hymn/Singing Request
+        # Determine User ID and Conversation ID
+        uid = message.user_id
+        cid = message.conversation_id or f"conv_{int(datetime.utcnow().timestamp())}"
         user_msg = message.message.lower().strip()
         
-        # Look for "sing", "play", "listen to", "hear" followed by optional text
+        logger.info(f"Incoming chat request: UID={uid}, CID={cid}, Message='{user_msg[:30]}...'")
+
+        # 1. Check for Hymn/Singing Request
         sing_match = re.search(r'\b(sing|play|listen|hear)\b\s*(.*)', user_msg)
-        
-        # Liberal check for intent
         is_request = (
             user_msg.startswith(("sing", "play", "listen", "hear", "can you", "could you", "please", "yes", "ok", "sure")) 
             or (sing_match and sing_match.start() < 15)
@@ -237,14 +250,9 @@ async def chat(message: ChatMessage):
 
         if hymn_player and is_request and (sing_match or "hymn" in user_msg or "song" in user_msg):
             query = sing_match.group(2).strip() if sing_match else user_msg
-            
-            # Remove filler words
             query = re.sub(r'\b(me|to|a|the|hymn|song|number)\b', '', query).strip()
             
-            # 1. Try to find specific hymns first
             hymns = hymn_player.get_hymns(query)
-            
-            # 2. If no specific hymns found, check for generic request
             is_generic = any(w in query.lower() for w in ["one", "any", "random", "something", "list", "song", "hymn"]) or not query
             
             if not hymns and is_generic:
@@ -253,58 +261,48 @@ async def chat(message: ChatMessage):
             
             if hymns:
                 primary_hymn = hymns[0]
-                audio_url = primary_hymn['url']
-                if audio_cache:
-                    try:
-                        import asyncio
-                        audio_url = await asyncio.to_thread(audio_cache.get_audio_url, primary_hymn['number'], primary_hymn['url'])
-                    except Exception as e:
-                        print(f"[Error] Audio caching failed: {e}")
-
-                if len(hymns) == 1:
-                    response_text = f"I've retrieved the official recording for <strong>\"{primary_hymn['title']}\"</strong> (Hymn #{primary_hymn['number']})."
-                else:
-                    response_text = "I found multiple hymns. I've loaded the first one for you. Which one would you like to hear more of?<br>"
-                    for h in hymns:
-                        response_text += f"<br>• {h['title']} (#{h['number']})"
+                response_text = f"I've retrieved the official recording for <strong>\"{primary_hymn['title']}\"</strong> (Hymn #{primary_hymn['number']})."
+                
+                # SAVE TO MEMORY
+                if rag_pipeline and rag_pipeline.memory:
+                    await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, response_text, uid)
 
                 return ChatResponse(
                     response=response_text,
                     sources=[],
-                    conversation_id=message.conversation_id or "sing_request",
+                    conversation_id=cid,
                     timestamp=datetime.utcnow().isoformat(),
-                    audio_url=f"/audio/hymn/{primary_hymn['number']}", # Use local proxy!
+                    audio_url=f"/audio/hymn/{primary_hymn['number']}",
                     audio_title=f"{primary_hymn['title']} (#{primary_hymn['number']})"
-                )
-            else:
-                return ChatResponse(
-                    response=f"I'm sorry, I couldn't find a hymn matching '{query}'. My current library includes: {', '.join(hymn_player.known_hymns[:8])}...",
-                    sources=[],
-                    conversation_id=message.conversation_id or "sing_request_failed",
-                    timestamp=datetime.utcnow().isoformat(),
                 )
 
         # 2. Check for Greetings
-        if user_msg in ["hello", "hi", "hey", "greetings"]:
+        greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening", "howdy"]
+        if any(greet in user_msg for greet in greetings) and len(user_msg) < 20:
+            resp = "Hello! I am Music-Assist. I can help you with LDS music theory, find hymns, or answer questions about conducting. How can I help you today?"
+            # SAVE TO MEMORY
+            if rag_pipeline and rag_pipeline.memory:
+                await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, resp, uid)
+                
             return ChatResponse(
-                response="Hello! I am Music-Assist. I can help you with LDS music theory, find hymns, or answer questions about conducting. How can I help you today?",
+                response=resp,
                 sources=[],
-                conversation_id=message.conversation_id or "greeting",
+                conversation_id=cid,
                 timestamp=datetime.utcnow().isoformat(),
             )
 
         if not rag_pipeline:
             raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
 
-        # Process the query through RAG pipeline
+        # Process the query through RAG pipeline (this now handles saving for standard queries)
         result = await rag_pipeline.query(
             query=message.message,
-            conversation_id=message.conversation_id,
-            user_id=message.user_id
+            conversation_id=cid,
+            user_id=uid
         )
         
         return ChatResponse(
-            response=result["answer"] if result.get("answer") else "I found some relevant sources but couldn't generate a specific answer. Please check the sources below.",
+            response=result["answer"] if result.get("answer") else "I found some relevant sources but couldn't generate a specific answer.",
             sources=result["sources"],
             conversation_id=result["conversation_id"],
             timestamp=datetime.utcnow().isoformat(),
@@ -469,6 +467,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="127.0.0.1",
-        port=int(os.getenv("PORT", 8080)),
+        port=int(os.getenv("PORT", 8000)),
         reload=True
     )

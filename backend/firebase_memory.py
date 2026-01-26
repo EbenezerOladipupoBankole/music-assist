@@ -12,12 +12,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Get MAX_CONVERSATION_HISTORY from rag_pipeline config
-try:
-    from rag_pipeline import CONFIG
-    MAX_CONVERSATION_HISTORY = CONFIG.get('MAX_CONVERSATION_HISTORY', 10)
-except (ImportError, KeyError):
-    MAX_CONVERSATION_HISTORY = 10
+# MAX_CONVERSATION_HISTORY fallback
+MAX_CONVERSATION_HISTORY = 10
 
 
 class FirebaseConversationMemory:
@@ -27,18 +23,20 @@ class FirebaseConversationMemory:
     """
     def __init__(self):
         self.db = None
+        self._in_memory_fallback = {}
         try:
             # Ensure app is initialized (should be done by main.py)
             if not firebase_admin._apps:
+                print("DEBUG: No Firebase apps found in memory, initializing with defaults...")
                 firebase_admin.initialize_app()
             
             self.db = firestore.client()
             logger.info("✅ Firebase Firestore initialized successfully for conversation memory.")
         except Exception as e:
+            print(f"CRITICAL DEBUG: Firebase/Firestore initialization failed with error: {e}")
             logger.warning(f"🔥 Firebase initialization failed: {e}")
             logger.warning("Conversation memory will be IN-MEMORY ONLY.")
-            self.db = None # Fallback to in-memory
-            self._in_memory_fallback = {}
+            self.db = None 
 
     def get_history(self, conversation_id: str) -> List[Tuple[str, str]]:
         """Retrieve conversation history."""
@@ -46,14 +44,20 @@ class FirebaseConversationMemory:
             return self._in_memory_fallback.get(conversation_id, [])
 
         try:
+            logger.info(f"⏳ Fetching history for conversation: {conversation_id}")
             docs = self.db.collection('conversations').document(conversation_id).collection('messages') \
                 .order_by('timestamp', direction=firestore.Query.DESCENDING) \
                 .limit(MAX_CONVERSATION_HISTORY).stream()
             
-            history = [(doc.to_dict().get('query'), doc.to_dict().get('response')) for doc in docs]
+            history = []
+            for doc in docs:
+                d = doc.to_dict()
+                history.append((d.get('query', ''), d.get('response', '')))
+            
+            logger.info(f"✅ Found {len(history)} messages for {conversation_id}")
             return list(reversed(history))
         except Exception as e:
-            logger.error(f"Error fetching history for {conversation_id}: {e}")
+            logger.error(f"❌ Error fetching history for {conversation_id}: {e}")
             return []
 
     def add_message(self, conversation_id: str, user_query: str, ai_response: str, user_id: str = None):
@@ -64,12 +68,10 @@ class FirebaseConversationMemory:
             return
 
         try:
+            logger.info(f"💾 Saving message. UserID: {user_id}, ConvID: {conversation_id}")
             # 1. Update the conversation metadata FIRST (ensure doc exists)
             conv_ref = self.db.collection('conversations').document(conversation_id)
             
-            # Use a transaction-like approach or just set with merge
-            # We fetch current state to avoid overwriting the title
-            snapshot = conv_ref.get()
             meta = {
                 'last_updated': firestore.SERVER_TIMESTAMP,
                 'last_query': user_query[:50] + "..." if len(user_query) > 50 else user_query,
@@ -78,7 +80,10 @@ class FirebaseConversationMemory:
             if user_id:
                 meta['user_id'] = user_id
             
+            # Check if title exists to avoid overwriting it
+            snapshot = conv_ref.get()
             if not snapshot.exists or 'title' not in snapshot.to_dict():
+                # Set initial title from first query
                 meta['title'] = user_query[:40] + "..." if len(user_query) > 40 else user_query
 
             conv_ref.set(meta, merge=True)
@@ -91,20 +96,19 @@ class FirebaseConversationMemory:
                 'timestamp': firestore.SERVER_TIMESTAMP
             })
 
-            logger.info(f"✅ Message saved to Firestore for conversation {conversation_id}")
+            logger.info(f"✅ Saved successfully to Firestore")
 
         except Exception as e:
-            logger.error(f"Error saving message to Firestore: {e}")
+            logger.error(f"❌ Error saving message to Firestore: {e}")
 
     def get_user_conversations(self, user_id: str) -> List[dict]:
         """Fetch list of conversation metadata for a specific user."""
         if not self.db or not user_id:
+            logger.warning(f"⚠️ get_user_conversations called without DB or UserID (ID: {user_id})")
             return []
 
         try:
-            # We remove order_by from the server-side query to avoid requiring 
-            # a composite index (user_id + last_updated), which is a common failure point.
-            # We limit to 50 and then sort in-memory.
+            logger.info(f"🔍 Searching conversations for UserID: {user_id}")
             docs = self.db.collection('conversations') \
                 .where('user_id', '==', user_id) \
                 .limit(50) \
@@ -119,13 +123,17 @@ class FirebaseConversationMemory:
                     "last_updated": data.get('last_updated')
                 })
 
-            # Sort in-memory instead (DESCENDING)
-            conversations.sort(
-                key=lambda x: (x['last_updated'].timestamp() if hasattr(x['last_updated'], 'timestamp') else 0), 
-                reverse=True
-            )
+            logger.info(f"📊 Found {len(conversations)} raw conversations")
 
-            return conversations[:20] # Return top 20
+            # Robust sort
+            def get_ts(x):
+                lu = x.get('last_updated')
+                if lu is None: return 0
+                if hasattr(lu, 'timestamp'): return lu.timestamp()
+                return 0
+
+            conversations.sort(key=get_ts, reverse=True)
+            return conversations[:20]
         except Exception as e:
-            logger.error(f"Error fetching user conversations for {user_id}: {e}")
+            logger.error(f"❌ Error fetching user conversations for {user_id}: {e}")
             return []

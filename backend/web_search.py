@@ -288,7 +288,12 @@ def is_music_related_question(query: str) -> bool:
     # - "Who composed Come Come Ye Saints?" → hymn history question = YES
     # - "What is the weather?" → no music = NO
     
+    # Allow common greetings to pass through so the LLM can respond naturally
+    greetings = ['hello', 'hi ', 'hi!', 'hey', 'greetings', 'morning', 'afternoon', 'evening', 'howdy']
+    is_greeting = any(greet in query_lower for greet in greetings) and len(query_lower) < 20
+
     return (
+        is_greeting or
         has_music_keyword or 
         has_hymn_number or 
         has_hymn_history_question or 

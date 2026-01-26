@@ -19,24 +19,24 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Production Configuration Constants
+# Production Configuration Constants - MAXIMUM SPEED OPTIMIZATION
 CONFIG = {
-    'MAX_CONTEXT_LENGTH': 4500, # Optimized for speed
-    'MAX_RETRIES': 2,
-    'RETRY_BASE_DELAY': 1,
-    'REQUEST_TIMEOUT': 45,
-    'MAX_TOKENS': 800, # Shorter, faster responses
-    'TEMPERATURE': 0.1,
-    'CHUNK_SIZE': 1200,
-    'CHUNK_OVERLAP': 200,
-    'MAX_CONVERSATION_HISTORY': 6,
-    'TOP_K_RESULTS': 5, # Faster local search
-    'FETCH_K_RESULTS': 12, # Optimized MMR
-    'MMR_LAMBDA': 0.6,
-    'MIN_CONTENT_LENGTH_FOR_LOCAL': 400,
-    'MIN_DOC_LENGTH_FOR_WEB': 300,
-    'COST_PER_1K_INPUT_TOKENS': 0.0005,
-    'COST_PER_1K_OUTPUT_TOKENS': 0.0015,
+    'MAX_CONTEXT_LENGTH': 2500, # Minimal context for speed
+    'MAX_RETRIES': 1,           # Fail fast
+    'RETRY_BASE_DELAY': 0.3,
+    'REQUEST_TIMEOUT': 15,      # Faster timeout
+    'MAX_TOKENS': 350,          # Concise responses = faster
+    'TEMPERATURE': 0.05,        # More deterministic = faster
+    'CHUNK_SIZE': 800,
+    'CHUNK_OVERLAP': 100,
+    'MAX_CONVERSATION_HISTORY': 3, # Minimal history
+    'TOP_K_RESULTS': 3,         # Fewer chunks = much faster
+    'FETCH_K_RESULTS': 8,       # Faster MMR
+    'MMR_LAMBDA': 0.8,          # Prioritize similarity over diversity
+    'MIN_CONTENT_LENGTH_FOR_LOCAL': 500,
+    'MIN_DOC_LENGTH_FOR_WEB': 800, # Rarely trigger web search
+    'COST_PER_1K_INPUT_TOKENS': 0.00015,  # GPT-4o-mini pricing
+    'COST_PER_1K_OUTPUT_TOKENS': 0.0006,  # GPT-4o-mini pricing
 }
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -50,7 +50,6 @@ from langchain_core.runnables import RunnablePassthrough
 
 # Import web search capabilities
 from web_search import ChurchMusicWebSearch, is_music_related_question
-from firebase_memory import FirebaseConversationMemory
 
 
 class RAGPipeline:
@@ -131,12 +130,21 @@ class RAGPipeline:
         self.memory = None # Conversation memory
         self._local_conversations = set() # Track active convos for stats
         
+        # Response cache for instant repeat queries (max 50 entries)
+        self._response_cache = {}
+        self._cache_max_size = 50
+        
         # Initialize web search
         self.web_searcher = ChurchMusicWebSearch()
         
     async def initialize(self):
         """Initialize or load vector store"""
         try:
+            # Initialize conversation memory (SQLite - simple and reliable)
+            from sqlite_memory import SQLiteConversationMemory
+            if not self.memory:
+                self.memory = SQLiteConversationMemory()
+
             # Try to load existing vector store - check for actual index file
             index_file = os.path.join(self.vector_db_path, "index.faiss")
             abs_path = os.path.abspath(index_file)
@@ -200,31 +208,21 @@ class RAGPipeline:
             }
         )
         
-        # Educational prompt template - updated for conversational flow
-        qa_system_prompt = """You are Music-Assist, a friendly and expert music teacher and consultant for members of The Church of Jesus Christ of Latter-day Saints.
+        # Ultra-concise prompt for speed
+        qa_system_prompt = """You are Music-Assist, an LDS Church music expert.
 
-=== YOUR PERSONALITY ===
-- **Expertly Grounded**: You are a master of official Church music policy and the 1985 Hymnbook. 
-- **Direct & Definitive**: Give specific numbers, names, and handbook sections (like "Handbook 19.4.2") whenever they appear in the source materials.
-- **Conversational**: Chat naturally, but keep facts front and center.
+RULES:
+1. Use CONTEXT below as your source
+2. Be direct - give specific hymn numbers, handbook sections, names
+3. Use lists (<ul>, <li>) for multiple items
+4. Keep under 100 words unless listing items
 
-=== GROUNDING RULES (VITAL) ===
-1. **Context is King**: The information provided in the CONTEXT below is your primary source of truth. If the context provides a specific fact (e.g., "The hymnbook has 341 hymns"), do NOT say "it typically has many" or "it varies." Give the specific info directly.
-2. **No Evasion**: Avoid "may vary" or "is generally" if the context offers a definitive rule or list.
-3. **No Robotic Labels**: Deliver facts naturally. Instead of "(Source 1)", say "As noted in the General Handbook..." or "According to the hymn index...". NEVER use robotic tags.
-4. **Accuracy Over Polish**: It is better to be brief and 100% accurate based on the context than to be long-winded and vague.
-
-=== RESPONSE FORMAT ===
-- Use simple HTML (p, b, br, ul, li).
-- Keep it friendly, professional, and fact-focused.
-
-=== CONTEXT FROM CHURCH MUSIC RESOURCES ===
+CONTEXT:
 {context}
-=== END OF CONTEXT ===
 
-User Question: {question}
+Question: {question}
 
-Answer (Conversationally expert and strictly grounded in the context facts):"""
+Answer:"""
 
         qa_prompt = PromptTemplate(
             template=qa_system_prompt,
@@ -300,6 +298,20 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
             # STEP 0: Input validation and sanitization
             query = self._validate_and_sanitize_input(query)
             self.total_queries += 1
+            
+            # STEP 0.5: Check cache for instant response
+            cache_key = query.lower().strip()
+            if cache_key in self._response_cache:
+                logger.info(f"⚡ Cache HIT for query: {query[:50]}...")
+                cached_result = self._response_cache[cache_key].copy()
+                cached_result["conversation_id"] = conversation_id or "cached"
+                cached_result["metrics"]["response_time_ms"] = 0  # Instant!
+                cached_result["metrics"]["cache_hit"] = True
+                # Still save to conversation history
+                if conversation_id and user_id:
+                    await asyncio.to_thread(self.memory.add_message, conversation_id, query, cached_result["answer"], user_id)
+                return cached_result
+            
             logger.info(f"Processing query (conv_id={conversation_id}): {query[:100]}...")
             
             # STEP 1: Validate topic - is this a music question?
@@ -406,28 +418,18 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
             self.total_input_tokens += metrics['input_tokens_estimated']
             self.total_output_tokens += metrics['output_tokens_estimated']
             
-            # Track search method used
-            if web_results:
-                search_method = "hybrid (local + web)"
-            else:
-                search_method = "local only"
-            
-            # Update conversation history in Firestore
-            await asyncio.to_thread(self.memory.add_message, conversation_id, query, result, user_id)
-            
-            # Calculate total response time
-            response_time_ms = int((time.time() - start_time) * 1000)
-            logger.info(f"Query completed: {response_time_ms}ms, cost=${metrics['cost_usd']}, method={search_method}, confidence={confidence_level}")
-            
-            return {
+            # Determine search method
+            search_method = "hybrid (local + web)" if web_results else "local only"
+
+            # 📦 Store in cache for instant repeat query
+            final_result = {
                 "answer": result,
                 "sources": self._extract_sources(local_docs, web_results),
-                "conversation_id": conversation_id,
                 "search_method": search_method,
                 "confidence": confidence_level,
                 "music_context": music_context,
                 "metrics": {
-                    "response_time_ms": response_time_ms,
+                    "response_time_ms": int((time.time() - start_time) * 1000),
                     "search_time_ms": metrics['search_time_ms'],
                     "generation_time_ms": metrics['generation_time_ms'],
                     "local_chunks_retrieved": metrics['local_docs_count'],
@@ -438,9 +440,23 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
                     "confidence_level": confidence_level,
                     "conversation_length": len(conversation_history_str.split('\n\n')) if conversation_history_str else 1,
                     "timestamp": datetime.utcnow().isoformat(),
-                    "index_refreshed": True # Knowledge base refreshed with Golden Facts
+                    "cache_hit": False
                 }
             }
+            
+            # Maintain cache size
+            if len(self._response_cache) >= self._cache_max_size:
+                # Remove first key (simple FIFO)
+                self._response_cache.pop(next(iter(self._response_cache)))
+            self._response_cache[cache_key] = final_result
+
+            # Update conversation history in SQLite (Background thread)
+            await asyncio.to_thread(self.memory.add_message, conversation_id, query, result, user_id)
+            
+            # Return result with the provided conversation_id
+            response_to_return = final_result.copy()
+            response_to_return["conversation_id"] = conversation_id
+            return response_to_return
             
         except ValueError as e:
             # Input validation errors
@@ -659,61 +675,23 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
     
     def _should_search_web(self, query: str, local_docs: List[Document]) -> bool:
         """
-        Determine if web search is needed based on local results quality
-        
-        Returns True if:
-        - No local results found
-        - Local results seem incomplete or low quality
-        - Query asks about specific people/names not in local data
+        Highly conservative web search logic to prioritize speed.
         """
-        # No local docs → definitely search web
+        # No local docs → only then consider web
         if not local_docs:
             return True
         
-        # Check content quality first
-        if local_docs:
-            # Calculate average content length of top 3 results
-            top_docs = local_docs[:3]
-            avg_length = sum(len(doc.page_content) for doc in top_docs) / len(top_docs)
-            
-            # If we have substantial content, analyze further
-            if avg_length > CONFIG['MIN_CONTENT_LENGTH_FOR_LOCAL']:
-                # Combine content for analysis
-                local_content = ' '.join([doc.page_content.lower() for doc in top_docs])
-                
-                # Check if query is about a specific person
-                person_indicators = ['who is', 'who are', 'biography', 'composer', 'arranger']
-                query_lower = query.lower()
-                
-                is_person_query = any(indicator in query_lower for indicator in person_indicators)
-                
-                if is_person_query:
-                    # Extract potential name terms from query
-                    query_terms = query_lower.split()
-                    name_terms = [
-                        term for term in query_terms 
-                        if len(term) > 3 and term.isalpha() 
-                        and term not in person_indicators
-                    ]
-                    
-                    # If key name terms not found in local content → search web
-                    if name_terms and not any(term in local_content for term in name_terms):
-                        logger.info(f"Person query not found in local data - searching web")
-                        return True
-                    else:
-                        logger.info(f"Person query found in local data - skipping web search")
-                        return False
-                else:
-                    # For non-person queries, trust substantial local content
-                    logger.info(f"Substantial local content found ({avg_length:.0f} chars avg) - skipping web search")
-                    return False
+        # If we have any documents, analyze if it's a "who is" question which often needs web data
+        query_lower = query.lower()
+        is_person_query = any(ind in query_lower for ind in ['who is', 'biography', 'composer', 'arranger'])
         
-        # FALLBACK: If top result is very short, might need supplementation
-        if local_docs and len(local_docs[0].page_content) < CONFIG['MIN_DOC_LENGTH_FOR_WEB']:
-            logger.info(f"Top result too short ({len(local_docs[0].page_content)} chars) - searching web")
-            return True
-        
-        # Otherwise, local data is sufficient
+        if is_person_query:
+            # Only search web for people if result quality is very low
+            avg_length = sum(len(doc.page_content) for doc in local_docs[:2]) / 2
+            if avg_length < 300:
+                return True
+                
+        # For everything else, if we have local docs, skip web for speed
         return False
     
     def _calculate_confidence(self, local_docs: List[Document], web_results: List[Dict], query: str) -> str:
@@ -875,25 +853,20 @@ Answer (Conversationally expert and strictly grounded in the context facts):"""
 {conversation_history}
 ===== END CONVERSATION HISTORY =====\n\n"""
                 
-                prompt = f"""You are Music-Assist, a friendly and expert music teacher and consultant for members of The Church of Jesus Christ of Latter-day Saints.{conversation_context}
+                prompt = f"""You are Music-Assist, an LDS Church music expert.
+{conversation_context}
+RULES:
+1. Use CONTEXT below as your only source
+2. Be direct - give specific numbers, names, and handbook sections
+3. Use lists (<ul>, <li>) where possible
+4. Under 100 words
 
-=== YOUR PERSONALITY ===
-- **Expertly Grounded**: You are a master of official Church music policy and the 1985 Hymnbook. 
-- **Direct & Definitive**: Give specific numbers, names, and handbook sections (like "Handbook 19.4.2") whenever they appear in the source materials.
-- **Conversational**: Chat naturally, but keep facts front and center.
-
-=== GROUNDING RULES (VITAL) ===
-1. **Context is King**: The information provided in the CONTEXT below is your primary source of truth. If the context has a specific fact, give it directly. NEVER say "it typically has many" or "it varies" if the context provides a number.
-2. **No Evasion**: Avoid "may vary" or "is generally" if the context offers a definitive rule.
-3. **Accuracy Over Polish**: It is better to be brief and 100% accurate based on the context than to be long-winded and vague.
-
-=== CONTEXT FROM CHURCH MUSIC RESOURCES ===
+CONTEXT:
 {context}
-=== END OF CONTEXT ===
 
-User Question: {query}
+Question: {query}
 
-Answer (Conversationally expert and strictly grounded in the context facts):"""
+Answer:"""
 
                 response = await asyncio.to_thread(
                     self.llm.invoke,
