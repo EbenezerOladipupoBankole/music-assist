@@ -21,22 +21,22 @@ logger = logging.getLogger(__name__)
 
 # Production Configuration Constants - MAXIMUM SPEED OPTIMIZATION
 CONFIG = {
-    'MAX_CONTEXT_LENGTH': 2500, # Minimal context for speed
+    'MAX_CONTEXT_LENGTH': 3200, # Balanced context for quality and speed
     'MAX_RETRIES': 1,           # Fail fast
-    'RETRY_BASE_DELAY': 0.3,
-    'REQUEST_TIMEOUT': 15,      # Faster timeout
-    'MAX_TOKENS': 350,          # Concise responses = faster
-    'TEMPERATURE': 0.05,        # More deterministic = faster
-    'CHUNK_SIZE': 800,
-    'CHUNK_OVERLAP': 100,
-    'MAX_CONVERSATION_HISTORY': 3, # Minimal history
-    'TOP_K_RESULTS': 3,         # Fewer chunks = much faster
-    'FETCH_K_RESULTS': 8,       # Faster MMR
-    'MMR_LAMBDA': 0.8,          # Prioritize similarity over diversity
-    'MIN_CONTENT_LENGTH_FOR_LOCAL': 500,
-    'MIN_DOC_LENGTH_FOR_WEB': 800, # Rarely trigger web search
-    'COST_PER_1K_INPUT_TOKENS': 0.00015,  # GPT-4o-mini pricing
-    'COST_PER_1K_OUTPUT_TOKENS': 0.0006,  # GPT-4o-mini pricing
+    'RETRY_BASE_DELAY': 0.2,
+    'REQUEST_TIMEOUT': 20,      # Adequate timeout for GPT-4o-mini
+    'MAX_TOKENS': 500,          # Professional responses need room to be thorough
+    'TEMPERATURE': 0.1,         # Slight personality while remaining factual
+    'CHUNK_SIZE': 1000,
+    'CHUNK_OVERLAP': 150,
+    'MAX_CONVERSATION_HISTORY': 4, # Better context awareness
+    'TOP_K_RESULTS': 4,         # More chunks for better coverage
+    'FETCH_K_RESULTS': 12,      # Improved MMR selection
+    'MMR_LAMBDA': 0.7,          # Balanced relevance and diversity
+    'MIN_CONTENT_LENGTH_FOR_LOCAL': 400,
+    'MIN_DOC_LENGTH_FOR_WEB': 600, 
+    'COST_PER_1K_INPUT_TOKENS': 0.00015,
+    'COST_PER_1K_OUTPUT_TOKENS': 0.0006,
 }
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -208,21 +208,27 @@ class RAGPipeline:
             }
         )
         
-        # Ultra-concise prompt for speed
-        qa_system_prompt = """You are Music-Assist, an LDS Church music expert.
+        # Professional, balanced prompt for quality responses
+        qa_system_prompt = """You are Music-Assist, a professional and authoritative AI researcher for the Church of Jesus Christ of Latter-day Saints music community.
 
-RULES:
-1. Use CONTEXT below as your source
-2. Be direct - give specific hymn numbers, handbook sections, names
-3. Use lists (<ul>, <li>) for multiple items
-4. Keep under 100 words unless listing items
+Your objective is to provide high-quality, professional, and reliable information grounded in official Church resources.
+
+TONE & STYLE:
+1. Professional & Respectful: Speak with the authority of a researcher. Use clear, sophisticated language.
+2. Structured: Use Markdown for clarity. Use **bolding** for important terms and bullet points for lists.
+3. Concise yet Thorough: Provide the complete answer, but avoid unnecessary conversational filler.
+
+RESPONSE RULES:
+1. Primary Source: Use the CONTEXT provided below. If the information is not present, state: "My current knowledge base does not contain specific details on this, but you may find it in the General Handbook or the official Church Music Library."
+2. Citations: Always mention relevant source titles or Handbook sections (e.g., "According to General Handbook 19.4...") if they appear in the context.
+3. Music Specifics: Always provide hymn numbers, composer names, and specific policy details when available.
 
 CONTEXT:
 {context}
 
-Question: {question}
+User Inquiry: {question}
 
-Answer:"""
+Response:"""
 
         qa_prompt = PromptTemplate(
             template=qa_system_prompt,
@@ -705,9 +711,13 @@ Answer:"""
         if not local_docs:
             return True
         
-        # 2. Local docs are too brief → search web for more detail
+        # 2. Local docs are too brief or placeholder → search web for more detail
         avg_length = sum(len(doc.page_content) for doc in local_docs) / len(local_docs)
-        if avg_length < 500:
+        
+        # Detect if the local docs are just small metadata snippets (which are fine) vs generic placeholders
+        is_metadata = any(doc.metadata.get('type') == 'hymn_metadata' for doc in local_docs)
+        
+        if not is_metadata and avg_length < CONFIG['MIN_CONTENT_LENGTH_FOR_LOCAL']:
             return True
 
         # 3. Person specific queries often need web data for biographies
