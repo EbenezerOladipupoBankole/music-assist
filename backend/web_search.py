@@ -23,8 +23,8 @@ class ChurchMusicWebSearch:
             "https://www.churchofjesuschrist.org/study/manual/sacred-music",
             "https://www.churchofjesuschrist.org/callings/church-music",
         ]
-        self.max_results = 5  # Limit to top 5 results to keep response time reasonable
-        self.timeout = 10  # 10 second timeout per request
+        self.max_results = 3  # Reduced for faster response
+        self.timeout = 8  # Tighter timeout for snappier fallback
         
     async def search(self, query: str) -> List[Dict]:
         """

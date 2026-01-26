@@ -21,18 +21,18 @@ logger = logging.getLogger(__name__)
 
 # Production Configuration Constants
 CONFIG = {
-    'MAX_CONTEXT_LENGTH': 8000, # Increased for more detailed fact-finding
+    'MAX_CONTEXT_LENGTH': 4500, # Optimized for speed
     'MAX_RETRIES': 2,
     'RETRY_BASE_DELAY': 1,
     'REQUEST_TIMEOUT': 45,
-    'MAX_TOKENS': 1500,
-    'TEMPERATURE': 0.1, # Lowered for strict factual precision
+    'MAX_TOKENS': 800, # Shorter, faster responses
+    'TEMPERATURE': 0.1,
     'CHUNK_SIZE': 1200,
-    'CHUNK_OVERLAP': 300, # Increased overlap for better continuity
-    'MAX_CONVERSATION_HISTORY': 8,
-    'TOP_K_RESULTS': 10, # Fetch more context blocks
-    'FETCH_K_RESULTS': 20, # More diversity for MMR retrieval
-    'MMR_LAMBDA': 0.5, # Balance relevance and diversity
+    'CHUNK_OVERLAP': 200,
+    'MAX_CONVERSATION_HISTORY': 6,
+    'TOP_K_RESULTS': 5, # Faster local search
+    'FETCH_K_RESULTS': 12, # Optimized MMR
+    'MMR_LAMBDA': 0.6,
     'MIN_CONTENT_LENGTH_FOR_LOCAL': 400,
     'MIN_DOC_LENGTH_FOR_WEB': 300,
     'COST_PER_1K_INPUT_TOKENS': 0.0005,
