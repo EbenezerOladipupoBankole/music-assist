@@ -15,17 +15,17 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
         {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-slate-900 to-slate-800"></div>
         <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-teal-500/20 rounded-full blur-2xl"></div>
-        
+
         <div className="relative p-8 pt-12">
-          <button 
+          <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
 
-          <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-6 mx-auto relative z-10">
-             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+          <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-6 mx-auto relative z-10 overflow-hidden">
+            <img src="/logo.png" alt="Music Assist Logo" className="w-4/5 h-4/5 object-contain" />
           </div>
 
           <div className="text-center mb-8">
@@ -44,7 +44,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
             <span>Continue with Google</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
           </button>
 
           <p className="mt-8 text-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">

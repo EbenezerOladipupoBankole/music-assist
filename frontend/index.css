@@ -11,23 +11,23 @@
 
 @layer components {
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+    @apply bg-white/80 backdrop-blur-2xl border border-slate-200/50 shadow-2xl;
   }
 
   .message-user {
-    @apply bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl rounded-tr-none shadow-lg;
+    @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-2xl rounded-tr-none shadow-xl border border-slate-700/50;
   }
 
   .message-ai {
-    @apply bg-white border border-slate-100 rounded-2xl rounded-tl-none shadow-sm;
+    @apply bg-white border border-slate-200/80 rounded-2xl rounded-tl-none shadow-sm shadow-slate-100;
   }
 
   .premium-gradient {
-    @apply bg-gradient-to-br from-teal-500 via-emerald-600 to-teal-700;
+    @apply bg-gradient-to-r from-teal-600 to-emerald-600;
   }
 
   .gold-accent {
-    @apply text-[#b45309] border-[#b45309];
+    @apply text-amber-500 border-amber-500/30;
   }
 }
 
@@ -79,6 +79,22 @@
 
 .animate-audio-bar {
   animation: audio-bar 0.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes shimmer {

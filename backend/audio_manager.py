@@ -31,14 +31,22 @@ class AudioCacheManager:
         # 2. Download it if we don't
         try:
             logger.info(f"📥 Downloading hymn {hymn_number} to local cache...")
+            temp_path = f"{local_path}.tmp"
             response = requests.get(source_url, timeout=15, stream=True)
             if response.status_code == 200:
-                with open(local_path, 'wb') as f:
+                with open(temp_path, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
-                        f.write(chunk)
+                        if chunk:
+                            f.write(chunk)
+                # Atomic rename
+                os.replace(temp_path, local_path)
                 logger.info(f"✅ Cached hymn {hymn_number} locally")
                 return local_path
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
         except Exception as e:
             logger.error(f"❌ Failed to cache hymn {hymn_number}: {e}")
+            if 'temp_path' in locals() and os.path.exists(temp_path):
+                os.remove(temp_path)
         
         return None # Indicate failure so we can fallback to direct stream

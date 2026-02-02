@@ -9,13 +9,14 @@ export const SUGGESTED_PROMPTS = [
 ];
 
 export const COLORS = {
-  primary: 'bg-[#0f172a]', // Midnight Navy
-  accent: '#b45309', // Amber Gold
-  teal: '#0d9488', // Sage Teal
-  surface: 'bg-[#fdfbf7]', // Linen White
-  card: 'bg-white border border-slate-100 shadow-sm hover:shadow-md transition-all',
-  chatUser: 'bg-[#1e293b] text-white shadow-xl',
-  chatAI: 'bg-white border border-slate-200 text-slate-800 shadow-sm'
+  primary: 'bg-[#0F172A]', // Deep Slate Midnight
+  accent: '#F59E0B', // Crisp Amber
+  teal: '#0D9488', // Sharp Teal 600
+  emerald: '#10B981', // Emerald 500
+  surface: 'bg-[#F8FAFC]', // Cool Slate 50
+  card: 'bg-white border border-slate-200/60 shadow-sm hover:shadow-md transition-all',
+  chatUser: 'bg-[#1E293B] text-white shadow-xl ring-1 ring-slate-800',
+  chatAI: 'bg-white border border-slate-200 text-slate-800 shadow-sm shadow-slate-200/50'
 };
 
 export const REFERENCE_LINKS = [
@@ -28,4 +29,4 @@ export const REFERENCE_LINKS = [
 export const API_BASE_URL = typeof window !== 'undefined' &&
   (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
   ? 'https://music-assist-backend.onrender.com' // Updated for Render: Use full backend URL
-  : 'http://127.0.0.1:8000'; // Match backend port
+  : 'http://127.0.0.1:8080'; // Match backend port

@@ -145,6 +145,18 @@ const App: React.FC = () => {
     setIsLoading(true);
     setStatusText('Reviewing handbook...');
 
+    // Placeholder AI message that we'll update as chunks arrive
+    const aiMsgId = (Date.now() + 1).toString();
+    const initialAiMsg: Message = {
+      id: aiMsgId,
+      sender: Sender.AI,
+      text: '',
+      timestamp: Date.now(),
+      sources: []
+    };
+
+    setMessages(prev => [...prev, initialAiMsg]);
+
     try {
       if (!user) {
         const newCount = queryCount + 1;
@@ -152,24 +164,38 @@ const App: React.FC = () => {
         localStorage.setItem('music_assist_query_count', newCount.toString());
       }
 
-      const response = await musicAssistApi.sendMessage(text, messages, currentConversationId, user?.uid);
+      let accumulatedText = '';
 
-      if (!currentConversationId && response.conversation_id) {
-        setCurrentConversationId(response.conversation_id);
-        if (user) fetchHistory(user.uid);
-      }
+      await musicAssistApi.streamMessage(
+        text,
+        messages,
+        currentConversationId,
+        user?.uid || null,
+        user?.displayName || null,
+        (chunk) => {
+          accumulatedText += chunk;
+          setMessages(prev => prev.map(m =>
+            m.id === aiMsgId ? { ...m, text: accumulatedText } : m
+          ));
+        },
+        (metadata) => {
+          if (metadata.conversation_id && !currentConversationId) {
+            setCurrentConversationId(metadata.conversation_id);
+            if (user) fetchHistory(user.uid);
+          }
+          if (metadata.sources || metadata.audio_url) {
+            setMessages(prev => prev.map(m =>
+              m.id === aiMsgId ? {
+                ...m,
+                sources: metadata.sources || m.sources,
+                audioUrl: metadata.audio_url || m.audioUrl,
+                audioTitle: metadata.audio_title || m.audioTitle
+              } : m
+            ));
+          }
+        }
+      );
 
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        sender: Sender.AI,
-        text: response.response,
-        timestamp: Date.now(),
-        sources: response.sources,
-        audioUrl: response.audio_url,
-        audioTitle: response.audio_title
-      };
-
-      setMessages(prev => [...prev, aiMsg]);
       setStatusText('Consultation complete');
       if (user) fetchHistory(user.uid);
     } catch (error) {
@@ -180,12 +206,9 @@ const App: React.FC = () => {
         errorMessage += `\n\n[System Diagnostic: ${error.message}]`;
       }
 
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        sender: Sender.AI,
-        text: errorMessage,
-        timestamp: Date.now()
-      }]);
+      setMessages(prev => prev.map(m =>
+        m.id === aiMsgId ? { ...m, text: errorMessage } : m
+      ));
       setStatusText('Service unavailable');
     } finally {
       setIsLoading(false);
@@ -194,7 +217,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[100dvh] bg-[#f8fafc] overflow-hidden font-sans text-slate-900 selection:bg-teal-100 relative">
+    <div className="flex h-[100dvh] bg-[#F8FAFC] overflow-hidden font-sans text-slate-900 selection:bg-teal-100 relative">
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -206,19 +229,19 @@ const App: React.FC = () => {
 
       {/* Sidebar - Desktop + Mobile Drawer */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 p-6 
+        fixed lg:static inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-200/60 p-6 
         transition-transform duration-300 ease-in-out lg:translate-x-0
         ${isSidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:flex'}
         flex flex-col
       `}>
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center overflow-hidden">
+              <img src="/logo.png" alt="Music Assist Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="font-serif font-black text-lg tracking-tight leading-none text-slate-900">Music Assist</h1>
-              <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Ecclesiastical AI</span>
+              <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest">Ecclesiastical AI</span>
             </div>
           </div>
           <button className="lg:hidden p-2 text-slate-400" onClick={() => setIsSidebarOpen(false)}>
@@ -297,13 +320,12 @@ const App: React.FC = () => {
           )}
         </header>
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-4 lg:pt-10 pb-4 scroll-smooth">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-4 lg:pt-10 pb-4 scroll-smooth bg-slate-50/50">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center max-w-2xl mx-auto px-6">
               <div className="text-center mb-10 lg:mb-16">
-                <div className="w-20 h-20 lg:w-24 lg:h-24 bg-slate-50 rounded-[2.5rem] lg:rounded-[3rem] flex items-center justify-center mx-auto mb-8 lg:mb-10 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] border border-slate-100/80 relative text-shadow-glow">
-                  <div className="absolute inset-0 bg-teal-500/5 rounded-full blur-2xl animate-pulse"></div>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="relative z-10"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                <div className="w-24 h-24 lg:w-32 lg:h-32 bg-white rounded-[2.5rem] lg:rounded-[3rem] flex items-center justify-center mx-auto mb-8 lg:mb-10 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100/80 relative overflow-hidden">
+                  <img src="/logo.png" alt="Music Assist Logo" className="w-4/5 h-4/5 object-contain" />
                 </div>
                 <h3 className="text-3xl lg:text-5xl font-serif font-black text-slate-900 mb-4 lg:mb-6 tracking-tight leading-tight lg:leading-[1.1]">
                   Sacred Guidance for <br /><span className="text-teal-600 italic">Sacred Music</span>
@@ -321,8 +343,8 @@ const App: React.FC = () => {
                     className="p-5 lg:p-6 bg-white border border-slate-200/60 hover:border-teal-500/30 rounded-2xl lg:rounded-[1.8rem] text-left hover:shadow-[0_20px_40px_rgba(15,23,42,0.06)] transition-all duration-500 group relative overflow-hidden"
                   >
                     <div className="absolute top-0 right-0 w-24 h-24 bg-teal-50/20 rounded-full -mr-12 -mt-12 transition-transform group-hover:scale-150 duration-700"></div>
-                    <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-teal-600 block mb-1 lg:mb-2 transition-colors">Consultation</span>
-                    <span className="text-[14px] lg:text-[15px] text-slate-600 group-hover:text-slate-900 leading-snug font-semibold transition-colors">{prompt}</span>
+                    <span className="text-[10px] lg:text-[11px] font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-emerald-600 block mb-1 lg:mb-2 transition-colors">Consultation</span>
+                    <span className="text-[14px] lg:text-[15px] text-slate-600 group-hover:text-slate-900 leading-snug font-bold transition-colors">{prompt}</span>
                   </button>
                 ))}
               </div>
@@ -334,13 +356,13 @@ const App: React.FC = () => {
               ))}
               {isLoading && (
                 <div className="flex justify-start px-4 mb-12">
-                  <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-none p-4 lg:p-5 shadow-sm flex items-center gap-4 lg:gap-5">
-                    <div className="flex space-x-1.5 lg:space-x-2">
-                      <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                      <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                      <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 bg-teal-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div className="bg-white/50 backdrop-blur-sm border border-slate-100/50 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-4 animate-pulse-subtle">
+                    <div className="flex gap-1">
+                      <div className="w-1.5 h-4 bg-teal-200 rounded-full"></div>
+                      <div className="w-1.5 h-6 bg-teal-400 rounded-full"></div>
+                      <div className="w-1.5 h-4 bg-teal-600 rounded-full"></div>
                     </div>
-                    <span className="text-[10px] lg:text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Consulting Handbook</span>
+                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.2em]">Processing Guidance</span>
                   </div>
                 </div>
               )}

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import os
+import json
 from datetime import datetime
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
@@ -78,24 +79,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-@app.get("/debug/memory")
-async def debug_memory():
-    """Diagnostic for conversation memory status"""
-    try:
-        status = {
-            "rag_pipeline": "OK" if rag_pipeline else "MISSING",
-            "memory": "MISSING",
-            "storage_type": "UNKNOWN"
-        }
-        
-        if rag_pipeline and hasattr(rag_pipeline, "memory") and rag_pipeline.memory:
-            status["memory"] = "OK"
-            status["storage_type"] = "SQLite"
-            status["db_path"] = getattr(rag_pipeline.memory, 'db_path', 'Unknown')
-        
-        return status
-    except Exception as e:
-        return {"error": str(e)}
+
 
 # Define allowed origins
 origins = [
@@ -148,6 +132,7 @@ class ChatMessage(BaseModel):
     message: str
     conversation_id: Optional[str] = None
     user_id: Optional[str] = None
+    user_name: Optional[str] = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -223,7 +208,7 @@ async def debug_memory():
         "firebase_apps": [app.name for app in firebase_admin._apps] if firebase_admin._apps else [],
         "has_rag_pipeline": rag_pipeline is not None,
         "has_memory": rag_pipeline.memory is not None if rag_pipeline else False,
-        "is_using_firestore": (rag_pipeline.memory.db is not None) if (rag_pipeline and rag_pipeline.memory) else False
+        "is_using_firestore": (getattr(rag_pipeline.memory, 'db', None) is not None) if (rag_pipeline and rag_pipeline.memory) else False
     }
     return status
 
@@ -249,11 +234,9 @@ async def chat(message: ChatMessage):
         
         logger.info(f"Incoming chat request: UID={uid}, CID={cid}, Message='{user_msg[:30]}...'")
 
-        # 1. Check for Hymn/Singing Request (Audio Playback)
-        sing_match = re.search(r'\b(sing|play|listen|hear|music for)\b\s*(.*)', user_msg)
-        # Identify specific intent for audio
-        has_audio_intent = any(w in user_msg for w in ["play", "sing", "listen", "audio", "recording"])
-        # Avoid intercepting "list", "about", "what is", "how many"
+        # 1. Check for Hymn Audio Request (Typo resilient)
+        sing_match = re.search(r'\b(sing|play|listen|hear|music for|plat|plsy)\b\s*(.*)', user_msg)
+        has_audio_intent = any(w in user_msg for w in ["play", "sing", "listen", "audio", "recording", "plat", "plsy"])
         is_informational = any(w in user_msg for w in ["list", "about", "what is", "how many", "tell me", "explain"])
 
         if hymn_player and has_audio_intent and not is_informational:
@@ -261,35 +244,82 @@ async def chat(message: ChatMessage):
             query = re.sub(r'\b(me|to|a|the|hymn|song|number)\b', '', query).strip()
             
             hymns = hymn_player.get_hymns(query)
-            # Only trigger auto-random if they EXPLICITLY ask for "something" or "random"
             is_explicit_random = any(w in query.lower() for w in ["random", "something", "any song"])
             
             if not hymns and is_explicit_random:
                 random_hymn = random.choice(hymn_player.hymns_db)
                 hymns = [random_hymn]
             
+                
             if hymns:
                 primary_hymn = hymns[0]
-                response_text = f"I've retrieved the official recording for <strong>\"{primary_hymn['title']}\"</strong> (Hymn #{primary_hymn['number']})."
                 
-                # SAVE TO MEMORY
-                if rag_pipeline and rag_pipeline.memory:
-                    await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, response_text, uid)
+                # Check if audio is available
+                if primary_hymn.get('url') is None:
+                    access_note = primary_hymn.get('access_note', 'Access hymn audio via Gospel Library app or ChurchofJesusChrist.org/music')
+                    response_text = f"**{primary_hymn['title']}** (Hymn #{primary_hymn['number']})\n\n📱 **How to Listen:**\n{access_note}\n\n*Note: Direct audio playback is temporarily unavailable due to updates in the Church's media delivery system. The audio recordings are still available through the official Church apps and website.*"
+                    
+                    if rag_pipeline and rag_pipeline.memory:
+                        await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, response_text, uid)
 
-                return ChatResponse(
-                    response=response_text,
-                    sources=[],
-                    conversation_id=cid,
-                    timestamp=datetime.utcnow().isoformat(),
-                    audio_url=f"/audio/hymn/{primary_hymn['number']}",
-                    audio_title=f"{primary_hymn['title']} (#{primary_hymn['number']})"
-                )
+                    return ChatResponse(
+                        response=response_text,
+                        sources=[{
+                            "type": "external",
+                            "title": "Gospel Library App",
+                            "url": "https://www.churchofjesuschrist.org/media/music"
+                        }],
+                        conversation_id=cid,
+                        timestamp=datetime.utcnow().isoformat()
+                    )
+                else:
+                    response_text = f"I've retrieved the official recording for **\"{primary_hymn['title']}\"** (Hymn #{primary_hymn['number']})."
+                    
+                    if rag_pipeline and rag_pipeline.memory:
+                        await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, response_text, uid)
+
+                    return ChatResponse(
+                        response=response_text,
+                        sources=[],
+                        conversation_id=cid,
+                        timestamp=datetime.utcnow().isoformat(),
+                        audio_url=f"/audio/hymn/{primary_hymn['number']}",
+                        audio_title=f"{primary_hymn['title']} (#{primary_hymn['number']})"
+                    )
+
 
         # 2. Check for Greetings
         greetings = ["hello", "hi", "hey", "greetings", "good morning", "good afternoon", "good evening", "howdy"]
         if any(greet in user_msg for greet in greetings) and len(user_msg) < 20:
-            resp = "Hello! I am Music-Assist. I can help you with LDS music theory, find hymns, or answer questions about conducting. How can I help you today?"
+            # Extract first name if available
+            name_part = ""
+            if message.user_name:
+                first_name = message.user_name.split()[0]  # Get first name only
+                name_part = f" {first_name}"
+            
+            resp = f"Hi{name_part}! I am Music-Assist. How can I help you with Church music today?"
+            
             # SAVE TO MEMORY
+            if rag_pipeline and rag_pipeline.memory:
+                await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, resp, uid)
+                
+            return ChatResponse(
+                response=resp,
+                sources=[],
+                conversation_id=cid,
+                timestamp=datetime.utcnow().isoformat(),
+            )
+        
+        # 3. Check for "How are you" type questions
+        how_are_you_patterns = ["how are you", "how are u", "how r you", "how r u", "how's it going", "how is it going", "what's up", "whats up"]
+        if any(pattern in user_msg for pattern in how_are_you_patterns):
+            name_part = ""
+            if message.user_name:
+                first_name = message.user_name.split()[0]
+                name_part = f" {first_name}"
+            
+            resp = f"I'm doing well, thank you{name_part}! I'm here and ready to help you with Church music questions, hymn searches, conducting guidance, or music theory. What would you like to explore today?"
+            
             if rag_pipeline and rag_pipeline.memory:
                 await asyncio.to_thread(rag_pipeline.memory.add_message, cid, message.message, resp, uid)
                 
@@ -321,6 +351,90 @@ async def chat(message: ChatMessage):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+@app.post("/chat/stream")
+async def chat_stream(message: ChatMessage):
+    """
+    Streaming chat endpoint for real-time AI responses.
+    """
+    if not rag_pipeline:
+        raise HTTPException(status_code=503, detail="RAG pipeline not initialized")
+
+    from fastapi.responses import StreamingResponse
+    
+    cid = message.conversation_id
+    uid = message.user_id
+    user_msg = message.message.lower().strip()
+    
+    # 1. Check for audio intent in streaming too
+    sing_match = re.search(r'\b(sing|play|listen|hear|music for|plat|plsy)\b\s*(.*)', user_msg)
+    has_audio_intent = any(w in user_msg for w in ["play", "sing", "listen", "audio", "recording", "plat", "plsy"])
+    is_informational = any(w in user_msg for w in ["list", "about", "what is", "how many", "tell me", "explain"])
+
+    async def event_generator():
+        if hymn_player and has_audio_intent and not is_informational:
+            query = sing_match.group(2).strip() if sing_match else user_msg
+            query = re.sub(r'\b(me|to|a|the|hymn|song|number)\b', '', query).strip()
+            
+            hymns = hymn_player.get_hymns(query)
+            if not hymns and any(w in query.lower() for w in ["random", "something", "any song"]):
+                hymns = [random.choice(hymn_player.hymns_db)]
+            
+            if hymns:
+                h = hymns[0]
+                final_cid = cid or f"conv_{int(datetime.utcnow().timestamp())}"
+                
+                # Check if audio URL exists
+                if h.get('url') is None:
+                    access_note = h.get('access_note', 'Access via Gospel Library app or ChurchofJesusChrist.org/music')
+                    resp_text = f"**{h['title']}** (Hymn #{h['number']})\n\n📱 **How to Listen:**\n{access_note}\n\n*Note: Direct audio playback is temporarily unavailable due to updates in the Church's media delivery system.*"
+                    
+                    # Emit metadata without audio URL
+                    meta_chunk = {
+                        'type': 'metadata',
+                        'conversation_id': final_cid,
+                        'sources': [{
+                            'type': 'external',
+                            'title': 'Gospel Library App',
+                            'url': 'https://www.churchofjesuschrist.org/media/music'
+                        }]
+                    }
+                    yield json.dumps(meta_chunk) + "\n"
+                    
+                    # Emit result text
+                    content_chunk = {'type': 'content', 'delta': resp_text}
+                    yield json.dumps(content_chunk) + "\n"
+                    
+                    # Save to memory
+                    if rag_pipeline and rag_pipeline.memory:
+                        await asyncio.to_thread(rag_pipeline.memory.add_message, final_cid, message.message, resp_text, uid)
+                    return
+                else:
+                    audio_title = f"{h['title']} (#{h['number']})"
+                    resp_text = f"I've retrieved the official recording for **\"{h['title']}\"** (Hymn #{h['number']})."
+                    
+                    # Emit metadata chunk with audio info
+                    meta_chunk = {
+                        'type': 'metadata',
+                        'audio_url': f"/audio/hymn/{h['number']}",
+                        'audio_title': audio_title,
+                        'conversation_id': final_cid
+                    }
+                    yield json.dumps(meta_chunk) + "\n"
+                    
+                    # Emit result text
+                    content_chunk = {'type': 'content', 'delta': resp_text}
+                    yield json.dumps(content_chunk) + "\n"
+                    
+                    # Save to memory
+                    if rag_pipeline and rag_pipeline.memory:
+                        await asyncio.to_thread(rag_pipeline.memory.add_message, final_cid, message.message, resp_text, uid)
+                    return
+
+        async for chunk in rag_pipeline.stream_query(message.message, cid, uid):
+            yield f"{chunk}\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @app.post("/crawl/trigger")
 async def trigger_crawl(admin_key: str):

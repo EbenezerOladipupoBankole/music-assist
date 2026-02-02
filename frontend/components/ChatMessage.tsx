@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Sender } from '../types.ts';
 import { API_BASE_URL } from '../constants.ts';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessageProps {
   message: Message;
@@ -47,7 +49,7 @@ const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
   };
 
   return (
-    <div className="mt-4 p-4 bg-teal-50 border-l-4 border-teal-500 rounded-r-xl shadow-inner relative overflow-hidden group select-none">
+    <div className="mt-4 p-4 bg-teal-50/50 border-l-[3px] border-emerald-500 rounded-r-xl shadow-inner relative overflow-hidden group select-none ring-1 ring-inset ring-teal-500/5">
       <audio
         ref={audioRef}
         src={fullUrl}
@@ -60,7 +62,7 @@ const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
         <button
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
           type="button"
-          className="w-12 h-12 flex-shrink-0 bg-teal-600 text-white rounded-xl flex items-center justify-center hover:bg-teal-700 active:bg-teal-800 active:scale-95 transition-all shadow-lg hover:shadow-teal-200 cursor-pointer relative z-30"
+          className="w-12 h-12 flex-shrink-0 bg-emerald-600 text-white rounded-xl flex items-center justify-center hover:bg-emerald-700 active:bg-emerald-800 active:scale-95 transition-all shadow-lg hover:shadow-emerald-200/50 cursor-pointer relative z-30 ring-1 ring-emerald-500/20"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? (
@@ -79,7 +81,7 @@ const AudioPlayer: React.FC<{ url: string; title?: string }> = ({ url, title }) 
             {title || "Official Hymn Recording"}
           </p>
 
-          <div className="mt-3 relative h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+          <div className="mt-3 relative h-1.5 w-full bg-slate-200/80 rounded-full overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-teal-500 transition-all duration-300 rounded-full"
               style={{ width: `${progress}%` }}
@@ -110,8 +112,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   return (
     <div className={`flex w-full mb-8 px-4 md:px-0 ${isAI ? 'justify-start' : 'justify-end'}`}>
       <div className={`relative max-w-[90%] md:max-w-[85%] overflow-hidden transition-all duration-300 ${isAI
-        ? 'bg-white border border-slate-100 shadow-sm rounded-2xl rounded-tl-sm p-6'
-        : 'bg-[#1e293b] text-white shadow-xl rounded-2xl rounded-tr-sm p-5'
+        ? 'bg-white border border-slate-200/80 shadow-sm rounded-2xl rounded-tl-sm p-6'
+        : 'bg-[#1E293B] text-white shadow-xl rounded-2xl rounded-tr-sm p-5 ring-1 ring-slate-800'
         }`}>
 
         {/* Header/Info Bar */}
@@ -129,12 +131,23 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
 
         {/* Message Content */}
         <div
-          className={`text-[15px] md:text-[16px] leading-[1.6] transition-colors ${isAI
+          className={`text-[15px] md:text-[16px] leading-[1.6] transition-colors prose max-w-none ${isAI
             ? 'font-serif text-slate-800'
             : 'font-sans text-white/95'
             }`}
-          dangerouslySetInnerHTML={{ __html: message.text || '<span class="text-slate-300 italic animate-pulse">Consulting the handbook...</span>' }}
-        />
+        >
+          {message.text ? (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.text}
+            </ReactMarkdown>
+          ) : (
+            <div className="space-y-3 animate-pulse-subtle">
+              <div className="h-4 bg-slate-100 rounded w-3/4 shimmer"></div>
+              <div className="h-4 bg-slate-100 rounded w-full shimmer"></div>
+              <div className="h-4 bg-slate-100 rounded w-5/6 shimmer"></div>
+            </div>
+          )}
+        </div>
 
         {/* Custom Audio Player */}
         {message.audioUrl && (
@@ -155,9 +168,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   href={source.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-slate-50 border border-slate-100 hover:border-teal-200 hover:bg-teal-50/50 transition-all text-[11px] font-medium text-slate-600 hover:text-teal-900 group"
+                  className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-500/50 hover:bg-emerald-50/30 transition-all text-[11px] font-bold text-slate-600 hover:text-emerald-900 group shadow-sm"
                 >
-                  <svg className="w-3 h-3 text-slate-400 group-hover:text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                  <svg className="w-3 h-3 text-slate-400 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                   <span>{source.title === 'Unknown' ? 'Official Recording' : source.title.split('–')[0].trim()}</span>
                 </a>
               ))}

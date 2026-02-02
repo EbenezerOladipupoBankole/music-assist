@@ -66,7 +66,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
       {/* Background Glow */}
       <div className="absolute -inset-2 bg-gradient-to-r from-teal-500/10 via-amber-500/5 to-teal-500/10 rounded-[2.5rem] blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
 
-      <div className="relative flex items-end gap-2 bg-white rounded-[1.8rem] border border-slate-200/80 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.08)] focus-within:border-teal-500/30 transition-all duration-300 p-2 pr-3">
+      <div className="relative flex items-end gap-2 bg-white rounded-[1.8rem] border border-slate-200 focus-within:border-emerald-500/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] focus-within:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300 p-2 pr-3">
 
         <textarea
           ref={textareaRef}
@@ -75,7 +75,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask about hymns, conducting, or music theory..."
-          className="flex-1 resize-none bg-transparent py-4 pl-5 pr-2 text-slate-700 focus:outline-none text-[15px] font-medium placeholder:text-slate-300 min-h-[56px] max-h-[200px]"
+          className="flex-1 resize-none bg-transparent py-4 pl-5 pr-2 text-slate-800 focus:outline-none text-[15px] font-medium placeholder:text-slate-300 min-h-[56px] max-h-[200px]"
           disabled={disabled}
         />
 
@@ -86,8 +86,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
               onClick={toggleListening}
               disabled={disabled}
               className={`p-2.5 rounded-full transition-all flex items-center justify-center ${isListening
-                  ? 'bg-red-50 text-red-600 animate-pulse'
-                  : 'text-slate-400 hover:bg-slate-50 hover:text-teal-600'
+                ? 'bg-red-50 text-red-600 animate-pulse'
+                : 'text-slate-400 hover:bg-slate-50 hover:text-emerald-600'
                 }`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></svg>
@@ -98,8 +98,8 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
             type="submit"
             disabled={!input.trim() || disabled}
             className={`p-2.5 rounded-2xl transition-all flex items-center justify-center ${!input.trim() || disabled
-                ? 'bg-slate-100 text-slate-300'
-                : 'bg-slate-900 text-white shadow-lg hover:-translate-y-0.5 active:translate-y-0'
+              ? 'bg-slate-100 text-slate-300'
+              : 'bg-[#10B981] text-white shadow-lg shadow-emerald-200/50 hover:bg-[#059669] hover:-translate-y-0.5 active:translate-y-0 ring-1 ring-emerald-400/20'
               }`}
           >
             {disabled ? (

@@ -11,91 +11,106 @@ class HymnPlayer:
     Manages hymn audio links and searching.
     """
     def __init__(self):
-        # Sample database of hymns with official LDS media library URLs (Modern Pattern)
+        # Hymn database - Audio URLs are currently unavailable due to Church platform migration
+        # Users should access hymns through: Gospel Library app, Sacred Music app, or ChurchofJesusChrist.org
         self.hymns_db = [
             {
                 "title": "The Morning Breaks",
                 "number": 1,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/001-the-morning-breaks-vocal-64k-eng.mp3",
-                "tags": ["morning", "opening"]
+                "url": None,  # Temporarily unavailable - use Gospel Library app
+                "tags": ["morning", "opening"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "The Spirit of God",
                 "number": 2,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/002-the-spirit-of-god-vocal-64k-eng.mp3",
-                "tags": ["opening", "restoration"]
+                "url": None,
+                "tags": ["opening", "restoration"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "High on the Mountain Top",
                 "number": 5,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/005-high-on-the-mountain-top-vocal-64k-eng.mp3",
-                "tags": ["opening", "restoration"]
+                "url": None,
+                "tags": ["opening", "restoration"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "Redeemer of Israel",
                 "number": 6,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/006-redeemer-of-israel-words-and-music-128k-eng.mp3",
-                "tags": ["opening", "savior"]
+                "url": None,
+                "tags": ["opening", "savior"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "We Thank Thee, O God, for a Prophet",
                 "number": 19,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/019-we-thank-thee-o-god-for-a-prophet-words-and-music-128k-eng.mp3",
-                "tags": ["prophet", "opening"]
+                "url": None,
+                "tags": ["prophet", "opening"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "Joseph Smith's First Prayer",
                 "number": 26,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/026-joseph-smiths-first-prayer-words-and-music-128k-eng.mp3",
-                "tags": ["restoration", "joseph smith"]
+                "url": None,
+                "tags": ["restoration", "joseph smith"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "Abide with Me!",
                 "number": 166,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/166-abide-with-me-words-and-music-128k-eng.mp3",
-                "tags": ["closing", "evening", "comfort"]
+                "url": None,
+                "tags": ["closing", "evening", "comfort"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "As Now We Take the Sacrament",
                 "number": 169,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/169-as-now-we-take-the-sacrament-words-and-music-128k-eng.mp3",
-                "tags": ["sacrament", "worship"]
+                "url": None,
+                "tags": ["sacrament", "worship"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "In Humility, Our Savior",
                 "number": 172,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/172-in-humility-our-savior-words-and-music-128k-eng.mp3",
-                "tags": ["sacrament", "savior", "worship"]
+                "url": None,
+                "tags": ["sacrament", "savior", "worship"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "Jesus of Nazareth, Savior and King",
                 "number": 181,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/181-jesus-of-nazareth-savior-and-king-words-and-music-128k-eng.mp3",
-                "tags": ["sacrament", "savior"]
+                "url": None,
+                "tags": ["sacrament", "savior"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "Upon the Cross of Calvary",
                 "number": 184,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/184-upon-the-cross-of-calvary-words-and-music-128k-eng.mp3",
-                "tags": ["sacrament", "savior", "atonement"]
+                "url": None,
+                "tags": ["sacrament", "savior", "atonement"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "I Stand All Amazed",
                 "number": 193,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/193-i-stand-all-amazed-vocal-64k-eng.mp3",
-                "tags": ["sacrament", "savior", "atonement"]
+                "url": None,
+                "tags": ["sacrament", "savior", "atonement"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "There Is a Green Hill Far Away",
                 "number": 194,
-                "url": "https://media2.ldscdn.org/audio/music/hymns/hymns-eng/194-there-is-a-green-hill-far-away-vocal-64k-eng.mp3",
-                "tags": ["sacrament", "savior", "atonement"]
+                "url": None,
+                "tags": ["sacrament", "savior", "atonement"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             },
             {
                 "title": "I Am a Child of God",
                 "number": 301,
-                "url": "https://media2.ldscdn.org/audio/music/childrens-songbook/childrens-songbook-eng/301-i-am-a-child-of-god-vocal-64k-eng.mp3",
-                "tags": ["children", "family"]
+                "url": None,
+                "tags": ["children", "family"],
+                "access_note": "Listen via Gospel Library app or ChurchofJesusChrist.org/music"
             }
         ]
         

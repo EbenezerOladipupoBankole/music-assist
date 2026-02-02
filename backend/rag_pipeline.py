@@ -22,17 +22,17 @@ logger = logging.getLogger(__name__)
 # Production Configuration Constants - MAXIMUM SPEED OPTIMIZATION
 CONFIG = {
     'MAX_CONTEXT_LENGTH': 3200, # Balanced context for quality and speed
-    'MAX_RETRIES': 1,           # Fail fast
-    'RETRY_BASE_DELAY': 0.2,
-    'REQUEST_TIMEOUT': 20,      # Adequate timeout for GPT-4o-mini
-    'MAX_TOKENS': 500,          # Professional responses need room to be thorough
-    'TEMPERATURE': 0.1,         # Slight personality while remaining factual
+    'MAX_RETRIES': 3,           # Production resilience
+    'RETRY_BASE_DELAY': 0.5,
+    'REQUEST_TIMEOUT': 45,      # Increased for stability
+    'MAX_TOKENS': 1000,         # Allow longer comprehensive answers
+    'TEMPERATURE': 0.2,         # Slight personality while remaining factual
     'CHUNK_SIZE': 1000,
     'CHUNK_OVERLAP': 150,
-    'MAX_CONVERSATION_HISTORY': 4, # Better context awareness
-    'TOP_K_RESULTS': 4,         # More chunks for better coverage
-    'FETCH_K_RESULTS': 12,      # Improved MMR selection
-    'MMR_LAMBDA': 0.7,          # Balanced relevance and diversity
+    'MAX_CONVERSATION_HISTORY': 10, # Better context awareness
+    'TOP_K_RESULTS': 5,         # More chunks for better coverage
+    'FETCH_K_RESULTS': 20,      # Improved MMR selection
+    'MMR_LAMBDA': 0.6,          # Balanced relevance and diversity
     'MIN_CONTENT_LENGTH_FOR_LOCAL': 400,
     'MIN_DOC_LENGTH_FOR_WEB': 600, 
     'COST_PER_1K_INPUT_TOKENS': 0.00015,
@@ -333,7 +333,7 @@ Response:"""
             if not is_music_related_question(query, has_history=has_history):
                 logger.info(f"Off-topic query detected: {query[:50]}")
                 return {
-                    "answer": "I'm Music-Assist, specialized in Church of Jesus Christ of Latter-day Saints music topics. I can help with hymns, choirs, music callings, sacred music guidelines, and music theory. However, your question appears to be outside my area of expertise. Please ask me about Church music topics!",
+                    "answer": "I appreciate your question, but I'm Music-Assist—specialized in Church of Jesus Christ of Latter-day Saints music topics. I can help with:\n\n• **Hymns** and sacred music\n• **Choir** organization and conducting\n• **Music callings** and responsibilities\n• **Music theory** and training\n• Church **music guidelines** and policies\n\nYour current question appears to be outside my expertise. Please feel free to ask me about Church music! I'm here to help. 🎵",
                     "sources": [],
                     "conversation_id": conversation_id or "none",
                     "search_method": "off-topic",
@@ -492,6 +492,98 @@ Response:"""
             self.failed_queries += 1
             logger.error(f"Error processing query: {e}", exc_info=True)
             raise
+
+    async def stream_query(
+        self,
+        query: str,
+        conversation_id: Optional[str] = None,
+        user_id: Optional[str] = None
+    ):
+        """
+        Streaming version of current RAG pipeline query.
+        Yields JSON chunks for metadata and content deltas.
+        """
+        start_time = time.time()
+        try:
+            # 1. Validation
+            query = self._validate_and_sanitize_input(query)
+            self.total_queries += 1
+
+            # 2. History check for topic guidance
+            has_history = False
+            last_question = ""
+            if conversation_id:
+                history = await asyncio.to_thread(self.memory.get_history, conversation_id)
+                has_history = bool(history)
+                if has_history:
+                    last_question = history[-1][0]
+
+            if not is_music_related_question(query, has_history=has_history):
+                 off_topic_msg = "I appreciate your question, but I'm Music-Assist—specialized in Church of Jesus Christ of Latter-day Saints music topics. I can help with:\n\n• **Hymns** and sacred music\n• **Choir** organization and conducting\n• **Music callings** and responsibilities\n• **Music theory** and training\n• Church **music guidelines** and policies\n\nYour current question appears to be outside my expertise. Please feel free to ask me about Church music! I'm here to help. 🎵"
+                 yield json.dumps({"type": "content", "delta": off_topic_msg})
+                 return
+
+            # 3. Retrieval
+            if self.qa_chain is None:
+                await self.initialize()
+            
+            search_query = query
+            if has_history and len(query.split()) < 8: # Simple follow-up
+                search_query = f"{last_question} {query}"
+
+            local_docs = await self._search_local(search_query)
+            needs_web_search = self._should_search_web(query, local_docs)
+            
+            web_results = []
+            if needs_web_search:
+                web_results = await self.web_searcher.search(query)
+            
+            combined_context = self._combine_contexts(local_docs, web_results)
+            sources = self._extract_sources(local_docs, web_results)
+            confidence = self._calculate_confidence(local_docs, web_results, query)
+            
+            # Emit metadata chunk (sources, confidence)
+            yield json.dumps({
+                "type": "metadata",
+                "sources": sources,
+                "confidence": confidence,
+                "conversation_id": conversation_id or f"conv_{int(time.time())}"
+            })
+
+            # 4. Generate & Stream
+            conv_history = await self._get_formatted_conversation_history(conversation_id)
+            prompt = self._prepare_streaming_prompt(query, combined_context, conv_history)
+
+            full_answer = ""
+            async for chunk in self.llm.astream(prompt):
+                delta = chunk.content
+                full_answer += delta
+                yield json.dumps({"type": "content", "delta": delta})
+
+            # 5. Persist
+            final_cid = conversation_id or f"conv_{int(time.time())}"
+            await asyncio.to_thread(self.memory.add_message, final_cid, query, full_answer, user_id)
+
+        except Exception as e:
+            logger.error(f"Streaming failed: {e}")
+            yield json.dumps({"type": "error", "message": str(e)})
+
+    def _prepare_streaming_prompt(self, query: str, context: str, history: str) -> str:
+        history_part = f"\n\n===== HISTORY =====\n{history}" if history else ""
+        return f"""You are Music-Assist, a professional LDS music expert.
+{history_part}
+
+Follow these strictly:
+1. Use the CONTEXT below to answer.
+2. Be professional, structured, and use Markdown (tables, lists, bolding).
+3. Be direct. If you don't know, suggest the General Handbook section 19.
+4. Keep it thorough but under 150 words.
+
+CONTEXT:
+{context}
+
+Question: {query}
+Answer:"""
     
     async def add_documents(self, documents: List[Dict]):
         """
