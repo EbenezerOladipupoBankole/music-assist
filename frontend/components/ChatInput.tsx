@@ -75,7 +75,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask about hymns, conducting, or music theory..."
-          className="flex-1 resize-none bg-transparent py-4 pl-5 pr-2 text-slate-800 focus:outline-none text-[15px] font-medium placeholder:text-slate-300 min-h-[56px] max-h-[200px]"
+          className="flex-1 resize-none bg-transparent py-4 pl-5 pr-2 text-slate-800 focus:outline-none text-[16px] font-medium placeholder:text-slate-300 min-h-[56px] max-h-[200px]"
           disabled={disabled}
         />
 

@@ -370,7 +370,7 @@ const App: React.FC = () => {
           )}
         </div>
 
-        <div className="shrink-0 p-4 lg:p-8 pt-0 bg-white lg:bg-transparent">
+        <div className="shrink-0 p-4 lg:p-8 pt-2 lg:pt-0 bg-white lg:bg-transparent border-t lg:border-t-0 border-slate-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
           <div className="text-center mt-3 lg:mt-5">
             <p className="text-[8px] lg:text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
