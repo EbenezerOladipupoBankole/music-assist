@@ -49,4 +49,4 @@ The application follows a modern, decoupled Full-Stack architecture:
 *   **Modular Scripts:** Created dedicated maintenance scripts (`rebuild_index.py`, `run_deep_crawl.py`) for easy system updates in production environments.
 
 ---
-*Created by Ebenezer Bankole & Antigravity AI*
+*Created by Ebenezer Bankole 
