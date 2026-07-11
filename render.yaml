@@ -1,44 +1,32 @@
 services:
-  # 1. The FastAPI Backend
+  # 1. Backend (FastAPI / Python)
   - type: web
     name: music-assist-backend
     runtime: python
-    region: oregon
-    plan: free
-    buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.13
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: ENVIRONMENT
-        value: production
-      - key: ALLOWED_ORIGINS
-        fromService:
-          type: web
-          name: music-assist-frontend
-          property: host
+        value: 3.11
 
-  # 2. The Frontend (React/Vite)
+  # 2. Frontend (React / Vite)
   - type: web
     name: music-assist-frontend
     runtime: static
     buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    staticPublishPath: frontend/dist
     envVars:
       - key: NODE_VERSION
         value: 18.17.0
       - key: NODE_OPTIONS
         value: --max-old-space-size=512
-    staticPublishPath: frontend/dist
-    envVars:
       - key: VITE_API_URL
         fromService:
           type: web
           name: music-assist-backend
           property: host
       - key: VITE_FIREBASE_API_KEY
-        value: AIzaSyDe6oPQht4Fl5iWcoZhVaDIxkuaqCwAky8
+        value: YOUR_FIREBASE_API_KEY
       - key: VITE_FIREBASE_AUTH_DOMAIN
         value: music-assists.firebaseapp.com
       - key: VITE_FIREBASE_PROJECT_ID
