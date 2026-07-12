@@ -76,5 +76,7 @@ backend/data/audio_cache/
 
 # Vector Database (Too large for GitHub)
 backend/data/vector_store/
+data/vector_store/
 index.faiss
 index.pkl
+
