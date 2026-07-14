@@ -1,25 +1,39 @@
 # Music-Assist Frontend
 
-React + TypeScript frontend for the Music-Assist RAG chatbot powered by FastAPI backend.
+React + TypeScript frontend for the Music-Assist RAG chatbot, backed by the
+FastAPI service in `../backend`.
 
-## Run Locally
+## Run locally
 
-**Prerequisites:** Node.js
+**Prerequisites:** Node (see `.node-version`)
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-2. Start the dev server:
-   ```bash
-   npm run dev
-   ```
-3. Make sure the FastAPI backend is running on `http://localhost:8080`
+```bash
+npm install
+cp .env.example .env.development   # fill in Firebase web config (see firebase.ts)
+npm run dev
+```
 
-The app will be available at `http://localhost:3000` (or another port if 3000 is in use).
+Make sure the FastAPI backend is running on `http://127.0.0.1:8080` (see
+`../backend/README.md`) - `VITE_API_BASE_URL` in `.env.development` points at
+it. The app is served at `http://localhost:3000` (or another port if 3000 is
+in use).
+
+## Testing & checks
+
+```bash
+npm run typecheck   # tsc --noEmit
+npm run test         # vitest
+npm run build        # production build (vite build)
+```
 
 ## Architecture
 
-- **Frontend:** React 19 with TypeScript and Tailwind CSS
-- **API Service:** Communicates with FastAPI backend at `http://localhost:8080/chat`
-- **Backend:** FastAPI with RAG pipeline using OpenAI LLM and FAISS vector store
+- React 19 + TypeScript, Vite, Tailwind CSS.
+- `App.tsx` composes `hooks/` (`useAuth`, `useChat`, `useConversationHistory`)
+  with presentational components (`Sidebar`, `ChatHeader`, `EmptyState`,
+  `ChatMessage`, `AudioPlayer`); `ErrorBoundary` wraps the tree in `index.tsx`.
+- `services/apiService.ts` talks to the FastAPI backend (`chat`/`chat/stream`,
+  `conversations/*`) - see `constants.ts` for how `API_BASE_URL` resolves.
+- `firebase.ts` configures Firebase Auth (Google sign-in) for `useAuth`.
+- Deployed as a static site via Firebase Hosting (`../firebase.json`) - the
+  backend is deployed separately (Render).

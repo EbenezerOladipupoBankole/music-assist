@@ -1,158 +1,129 @@
 # Music Assist Backend
 
-A RAG-powered chatbot for LDS music theory, built with FastAPI, LangChain, and OpenAI.
+A RAG-powered chatbot for LDS Church music (hymns, conducting, music theory, and
+music-calling guidance), built with FastAPI, LangChain, OpenAI, and FAISS.
 
-## 📋 Prerequisites
+## Architecture
 
-1.  **Python 3.9+** installed.
-2.  **OpenAI API Key**: You need a paid account (credits added to balance), not just ChatGPT Plus.
+```
+main.py            FastAPI app: lifespan (wires up RAGPipeline/HymnPlayer/
+                    AudioCacheManager), CORS, router registration.
+config.py           Centralized Settings (pydantic-settings) - every env var
+                    the backend reads lives here.
+dependencies.py     FastAPI DI providers that pull the app.state singletons
+                    back out for route handlers.
+interfaces.py       ConversationMemory Protocol shared by the SQLite and
+                    Firestore memory backends.
+routers/            One module per resource: health, chat, audio,
+                    conversations, admin.
+services/intent.py  Regex-based canned-response detection (greetings, "how
+                    are you", hymn-audio requests) shared by /chat and
+                    /chat/stream so they can't drift apart.
+rag_pipeline.py      Core RAG engine: FAISS retrieval + web-search fallback +
+                    OpenAI generation + conversation-aware caching.
+sqlite_memory.py /
+firebase_memory.py  Conversation history backends (selected via
+                    settings.memory_backend, default sqlite).
+web_search.py        Fallback search over a fixed set of Church music pages
+                    when the local vector store is thin.
+crawler.py / populate_db.py
+                    Offline scripts to build the FAISS index from Church
+                    websites + structured hymn/theory data.
+```
 
-## 🛠️ Installation
+## Prerequisites
 
-Navigate to the backend directory:
+- Python 3.11+
+- An OpenAI API key with billing enabled (a ChatGPT Plus subscription alone
+  does **not** grant API access)
+
+## Setup
 
 ```bash
 cd backend
-```
-
-### Option A: Using Poetry (Recommended)
-```bash
-# Install dependencies
-poetry install
-# Or add them if starting fresh:
-poetry add fastapi uvicorn python-multipart pydantic langchain langchain-openai langchain-community langchain-text-splitters openai faiss-cpu aiohttp beautifulsoup4 lxml numpy pandas python-dotenv firebase-admin python-json-logger
-```
-
-### Option B: Using Pip
-```bash
-# Create virtual environment
 python -m venv venv
+.\venv\Scripts\activate      # Windows
+source venv/bin/activate     # macOS/Linux
 
-# Activate it (Windows):
-.\venv\Scripts\activate
-
-# Activate it (macOS/Linux):
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## ⚙️ Configuration
-
-1.  **Firebase Setup (for Conversation Memory)**
-    - Go to your Firebase project settings > Service accounts.
-    - Click "Generate new private key" and download the JSON file.
-    - **Important**: Keep this file secure and do not commit it to Git.
-    - Place the file somewhere safe, for example, in your project's root directory (outside `backend`).
-    - Set an environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of this file. You can do this in your operating system or in the `.env` file below.
-
-2.  **Environment Variables**
-    - Copy the environment template:
-```bash
+pip install -r requirements-dev.txt   # requirements.txt + pytest/ruff
 cp .env.example .env
+# edit .env: set OPENAI_API_KEY and ADMIN_KEY at minimum
 ```
 
-2.  Edit `.env` and add your keys:
-```dotenv
-OPENAI_API_KEY=sk-your-actual-api-key-here
-ADMIN_KEY=your-secure-admin-key
-LLM_MODEL=gpt-3.5-turbo
-VECTOR_DB_PATH=./data/vector_store
-CRAWLED_DATA_PATH=./data/crawled
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:8080
-```
+## Build the knowledge base (first run only)
 
-**Getting your OpenAI API Key:**
-1. Go to https://platform.openai.com/account/api-keys
-2. Create a new API key
-3. Add credits to your account (need $$ balance, not just ChatGPT Plus)
-4. Copy the key into your `.env` file
-
-## 🚀 How to Run
-
-### Step 1: Populate the Database (First Time Only)
-Before the bot can answer questions, it needs to crawl the music websites and build its memory (Vector Store).
+The bot answers from a local FAISS index built from Church websites and
+structured hymn/theory data. Build it once before starting the server:
 
 ```bash
-python crawler.py
+python populate_db.py
 ```
-*Note: This requires OpenAI API credits. If you see a 429 error, check your billing balance at platform.openai.com.*
 
-### Step 2: Start the Server
-Open a terminal and run the backend server:
+This crawls the configured Church music pages (`crawler.py`) and then builds
+the FAISS index (`rag_pipeline.rebuild_vector_store`) - expect this to take
+several minutes and to spend OpenAI embedding credits. Until this has run
+once, `/chat` responds with a "Knowledge Base Not Initialized" message
+instead of an error.
+
+## Run the server
 
 ```bash
-# If using virtual environment, activate it first:
-.\venv\Scripts\activate  # Windows
-source venv/bin/activate  # macOS/Linux
-
-# Start server
 python -m uvicorn main:app --reload --port 8080
 ```
-*The server will start at `http://127.0.0.1:8080`*
-*API docs available at `http://127.0.0.1:8080/docs`*
 
-### Step 3: Chat with the Bot (Optional)
-Open a **new** terminal window (keep the server running in the first one) and run the chat script:
+- API: `http://127.0.0.1:8080`
+- Interactive docs: `http://127.0.0.1:8080/docs`
 
-```bash
-python terminal_chat.py
-```
+## API surface
 
-## 🔧 Troubleshooting
+| Endpoint | Notes |
+|---|---|
+| `GET /` , `GET /health` | Liveness / readiness (reflects RAG pipeline health) |
+| `GET /stats` | Query counts, cost tracking, success rate |
+| `POST /chat` | Single-shot chat response |
+| `POST /chat/stream` | NDJSON-streamed chat response |
+| `GET /audio/hymn/{number}` | Cached hymn audio, proxied from source on a cache miss |
+| `GET /conversations/{user_id}` | List a user's past conversations |
+| `GET /conversations/{conversation_id}/history` | Full message history for one conversation |
+| `POST /crawl/trigger` | Admin-only: re-crawl + rebuild the index (`admin_key` query param) |
+| `GET /debug/memory` | Admin-only: conversation-memory diagnostics |
 
-**Error: `ModuleNotFoundError: No module named 'langchain' ...`**
-- Ensure you've activated your virtual environment and installed all dependencies
-- Windows: `.\venv\Scripts\activate` then `pip install -r requirements.txt`
-- macOS/Linux: `source venv/bin/activate` then `pip install -r requirements.txt`
+`/chat` and `/chat/stream` short-circuit to canned responses (see
+`services/intent.py`) for greetings, "how are you", and hymn-audio requests
+before falling through to the full RAG pipeline for everything else.
+Off-topic (non-music) questions get a fixed redirect message rather than
+being sent to the LLM.
 
-**Error: `insufficient_quota` or `429`**
-- Your OpenAI API key is valid, but the account has no funds.
-- Go to https://platform.openai.com/account/billing/overview
-- Add credits (e.g., $5) to your account
-- Wait a few minutes for changes to propagate
-
-**Error: `Vector store not initialized`**
-- The database is empty. Run `python crawler.py` to populate it
-- Make sure your `.env` file has a valid `OPENAI_API_KEY` with credits
-
-**Error: `OPENAI_API_KEY not found`**
-- Ensure `.env` file exists in the `backend` directory
-- Check that `OPENAI_API_KEY=sk-...` is on the first line
-- Make sure there are no extra spaces or quotes
-
-**Error: `UnicodeDecodeError`**
-- Ensure you're using the latest version of the code
-- Delete and re-run `python crawler.py`
-
-**Server won't start or keeps reloading**
-- Check if port 8000 is already in use
-- Try a different port: `python -m uvicorn main:app --reload --port 8001`
-
-## 📝 For Collaborators
-
-To get the latest changes:
+## Testing
 
 ```bash
-# Pull latest code
-git pull origin main
-
-# Make sure virtual environment is set up
-python -m venv venv
-.\venv\Scripts\activate  # Windows
-
-# Install/update dependencies
-pip install -r requirements.txt
-# Or if using the pip install command from above
-
-# Configure your .env file if it doesn't exist
-cp .env.example .env
-# Edit .env with your own API keys
-
-# You're ready to go!
-python -m uvicorn main:app --reload
+pytest              # full suite - runs offline, no OpenAI key needed
+ruff check .         # lint
 ```
 
+The suite (`tests/`) fakes out the RAG pipeline, hymn player, and audio cache
+via FastAPI `dependency_overrides` (see `tests/conftest.py`), so it never
+makes a real OpenAI/Firestore call.
 
-Firebase Url <https://music-assits.web.app/>
+## Troubleshooting
+
+**`ModuleNotFoundError: No module named 'langchain'`**
+Activate the virtualenv, then `pip install -r requirements.txt`.
+
+**`insufficient_quota` / HTTP 429 from OpenAI**
+The API key is valid but the account has no funds. Add credits at
+https://platform.openai.com/settings/organization/billing and wait a few
+minutes.
+
+**Chat replies with "Knowledge Base Not Initialized"**
+The FAISS index hasn't been built yet - run `python populate_db.py`.
+
+**`OPENAI_API_KEY` not found**
+Confirm `.env` exists in `backend/` (not the repo root) and contains
+`OPENAI_API_KEY=sk-...` with no surrounding quotes.
+
+## Deployment
+
+Deployed on Render as a Docker web service - see `render.yaml` and
+`Dockerfile`. The frontend is a separate static Firebase Hosting deploy (see
+`../firebase.json`), not part of this service.
