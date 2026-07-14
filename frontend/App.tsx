@@ -36,6 +36,11 @@ const App: React.FC = () => {
   });
 
   useEffect(() => {
+    // Only auto-scroll once there's actual chat content - this used to fire
+    // on initial mount too (messages=[]), which scrolled the empty-state
+    // intro to the bottom of its own content on short viewports, hiding the
+    // logo/heading behind the sticky header instead of showing them.
+    if (messages.length === 0) return;
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
         top: scrollRef.current.scrollHeight,
@@ -60,7 +65,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="flex h-[100dvh] bg-[#F8FAFC] overflow-hidden font-sans text-slate-900 selection:bg-teal-100 relative">
+    <div className="flex h-[100dvh] bg-slate-50 overflow-hidden font-sans text-slate-900 selection:bg-teal-100 relative">
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -73,7 +78,7 @@ const App: React.FC = () => {
         onLoginClick={() => setIsLoginModalOpen(true)}
       />
 
-      <main className="flex-1 flex flex-col h-full relative bg-white lg:rounded-l-[2.5rem] lg:my-2 lg:mr-2 lg:shadow-[0_0_50px_rgba(15,23,42,0.05)] overflow-hidden border-l border-slate-100/50">
+      <main className="flex-1 flex flex-col h-full relative bg-white lg:rounded-[2rem] lg:my-3 lg:mr-3 lg:shadow-prominent overflow-hidden border border-transparent lg:border-slate-100">
         <ChatHeader
           user={user}
           onMenuClick={() => setIsSidebarOpen(true)}
@@ -81,23 +86,23 @@ const App: React.FC = () => {
           onLoginClick={() => setIsLoginModalOpen(true)}
         />
 
-        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-4 lg:pt-10 pb-4 scroll-smooth bg-slate-50/50">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pt-6 lg:pt-12 pb-4 scroll-smooth bg-gradient-to-b from-slate-50/60 to-white">
           {messages.length === 0 ? (
             <EmptyState onPromptClick={handleSendMessage} />
           ) : (
-            <div className="max-w-4xl mx-auto w-full px-4 lg:px-12">
+            <div className="max-w-3xl mx-auto w-full px-4 lg:px-8">
               {messages.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} />
               ))}
               {isLoading && (
                 <div className="flex justify-start px-4 mb-12" aria-live="polite">
-                  <div className="bg-white/50 backdrop-blur-sm border border-slate-100/50 rounded-2xl rounded-tl-none p-4 shadow-sm flex items-center gap-4 animate-pulse-subtle">
-                    <div className="flex gap-1">
-                      <div className="w-1.5 h-4 bg-teal-200 rounded-full"></div>
-                      <div className="w-1.5 h-6 bg-teal-400 rounded-full"></div>
-                      <div className="w-1.5 h-4 bg-teal-600 rounded-full"></div>
+                  <div className="bg-white border border-slate-100 rounded-2xl rounded-tl-md px-5 py-4 shadow-subtle flex items-center gap-4">
+                    <div className="flex gap-1 items-end h-4">
+                      <div className="w-1 h-2 bg-teal-300 rounded-full animate-audio-bar" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-1 h-4 bg-teal-500 rounded-full animate-audio-bar" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-1 h-3 bg-teal-700 rounded-full animate-audio-bar" style={{ animationDelay: '300ms' }}></div>
                     </div>
-                    <span className="text-[10px] font-black text-teal-600 uppercase tracking-[0.2em]">{statusText}</span>
+                    <span className="text-2xs font-bold text-teal-700 uppercase">{statusText}</span>
                   </div>
                 </div>
               )}
@@ -105,11 +110,11 @@ const App: React.FC = () => {
           )}
         </div>
 
-        <div className="shrink-0 p-4 lg:p-8 pt-2 lg:pt-0 bg-white lg:bg-transparent border-t lg:border-t-0 border-slate-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+        <div className="shrink-0 p-4 lg:p-6 pt-2 lg:pt-0 bg-white lg:bg-transparent border-t lg:border-t-0 border-slate-100 pb-[calc(1rem+env(safe-area-inset-bottom))]">
           <ChatInput onSend={handleSendMessage} disabled={isLoading} />
-          <div className="text-center mt-3 lg:mt-5">
-            <p className="text-[8px] lg:text-[9px] text-slate-300 font-black uppercase tracking-[0.3em]">
-              Music Management System • Authorized Use Only
+          <div className="text-center mt-3 lg:mt-4">
+            <p className="text-2xs text-slate-300 font-semibold uppercase">
+              Music Management System · Authorized Use Only
             </p>
           </div>
         </div>

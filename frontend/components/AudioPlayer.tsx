@@ -49,7 +49,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
   };
 
   return (
-    <div className="mt-4 p-4 bg-teal-50/50 border-l-[3px] border-emerald-500 rounded-r-xl shadow-inner relative overflow-hidden group select-none ring-1 ring-inset ring-teal-500/5">
+    <div className="mt-4 p-4 bg-teal-50/50 border-l-[3px] border-emerald-500 rounded-r-xl relative overflow-hidden group select-none">
       <audio
         ref={audioRef}
         src={fullUrl}
@@ -62,7 +62,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
         <button
           onClick={(e) => { e.stopPropagation(); togglePlay(); }}
           type="button"
-          className="w-12 h-12 flex-shrink-0 bg-emerald-600 text-white rounded-xl flex items-center justify-center hover:bg-emerald-700 active:bg-emerald-800 active:scale-95 transition-all shadow-lg hover:shadow-emerald-200/50 cursor-pointer relative z-30 ring-1 ring-emerald-500/20"
+          className="w-12 h-12 flex-shrink-0 bg-emerald-600 text-white rounded-xl flex items-center justify-center hover:bg-emerald-700 active:bg-emerald-800 active:scale-95 transition-all shadow-elevated cursor-pointer relative z-30"
           aria-label={isPlaying ? 'Pause hymn recording' : 'Play hymn recording'}
         >
           {isPlaying ? (
@@ -75,7 +75,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ url, title }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1.5">
             <div className={`w-2 h-2 rounded-full bg-teal-500 ${isPlaying ? 'animate-ping' : ''}`}></div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-teal-800">Direct Recording</span>
+            <span className="text-2xs font-bold uppercase text-teal-800">Direct Recording</span>
           </div>
           <p className="text-sm font-bold text-slate-900 truncate pr-4 italic">
             {title || "Official Hymn Recording"}

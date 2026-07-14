@@ -32,7 +32,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
       aria-modal="true"
       aria-labelledby="login-modal-title"
     >
-      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
+      <div className="bg-white rounded-[2rem] shadow-prominent w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
         {/* Decorative background elements */}
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-slate-900 to-slate-800"></div>
         <div className="absolute top-[-20px] right-[-20px] w-32 h-32 bg-teal-500/20 rounded-full blur-2xl"></div>
@@ -44,21 +44,21 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
             className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
             aria-label="Close sign-in dialog"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
 
-          <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg mb-6 mx-auto relative z-10 overflow-hidden">
+          <div className="bg-white w-16 h-16 rounded-2xl flex items-center justify-center shadow-elevated mb-6 mx-auto relative z-10 overflow-hidden">
             <img src="/logo.png" alt="Music Assist Logo" className="w-4/5 h-4/5 object-contain" />
           </div>
 
           <div className="text-center mb-8">
             <h2 id="login-modal-title" className="text-2xl font-bold text-slate-900 font-serif mb-2">Welcome Back</h2>
-            <p className="text-slate-500 text-sm">Sign in to access unlimited queries and save your conversation history.</p>
+            <p className="text-slate-500 text-sm leading-relaxed">Sign in to access unlimited queries and save your conversation history.</p>
           </div>
 
           <button
             onClick={onLogin}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-4 px-6 rounded-xl transition-all shadow-sm hover:shadow-md group"
+            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-6 rounded-xl transition-all shadow-subtle hover:shadow-elevated group"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -70,7 +70,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onLogin }) => 
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
           </button>
 
-          <p className="mt-8 text-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">
+          <p className="mt-8 text-center text-2xs text-slate-400 uppercase font-bold">
             Ecclesiastical Intelligence
           </p>
         </div>
