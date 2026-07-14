@@ -8,34 +8,6 @@
     ],
     "rewrites": [
       {
-        "source": "/chat",
-        "run": {
-          "serviceId": "music-assist",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/health",
-        "run": {
-          "serviceId": "music-assist",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/stats",
-        "run": {
-          "serviceId": "music-assist",
-          "region": "us-central1"
-        }
-      },
-      {
-        "source": "/api/**",
-        "run": {
-          "serviceId": "music-assist",
-          "region": "us-central1"
-        }
-      },
-      {
         "source": "**",
         "destination": "/index.html"
       }
@@ -51,20 +23,5 @@
         ]
       }
     ]
-  },
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "runtime": "python313"
-    }
-  ]
+  }
 }

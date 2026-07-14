@@ -16,6 +16,7 @@ COPY . .
 ENV ENVIRONMENT=production
 ENV PORT=8080
 
-# Run the web service on container startup
-# Host 0.0.0.0 is required for Cloud Run
+# Run the web service on container startup.
+# 0.0.0.0 + reading $PORT from the environment is required by Render (see
+# render.yaml) - it assigns and injects the port at runtime.
 CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT}

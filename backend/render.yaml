@@ -1,0 +1,35 @@
+# Render Blueprint for the Music-Assist backend API.
+#
+# This file lives in backend/ rather than the repo root, so if you're using
+# Render's "New Blueprint" auto-detect flow, point it at this path explicitly
+# (Render dashboard -> Blueprint -> "render.yaml path": backend/render.yaml).
+# Otherwise, use it as the reference for a manually-created Web Service with
+# the same settings.
+#
+# The frontend is NOT deployed here - it's a static Firebase Hosting site
+# (see ../firebase.json / ../.firebaserc), built with `npm run build` in
+# frontend/ and deployed via `firebase deploy`.
+services:
+  - type: web
+    name: music-assist-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: oregon
+    plan: starter
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      # Required for the RAG pipeline to start - set in the Render dashboard,
+      # never committed here.
+      - key: OPENAI_API_KEY
+        sync: false
+      # Protects /debug/memory and /crawl/trigger - set in the Render dashboard.
+      - key: ADMIN_KEY
+        sync: false
+      # Comma-separated extra CORS origins beyond config.py's built-in
+      # allow-list (e.g. a preview Firebase Hosting channel URL).
+      - key: ALLOWED_ORIGINS
+        sync: false
