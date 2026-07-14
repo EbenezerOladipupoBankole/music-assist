@@ -25,3 +25,15 @@ export interface ChatSession {
   messages: Message[];
   createdAt: number;
 }
+
+export interface UserProfile {
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+  uid: string;
+}
+
+export interface SavedConversation {
+  id: string;
+  title: string;
+}

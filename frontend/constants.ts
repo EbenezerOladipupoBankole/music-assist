@@ -26,7 +26,10 @@ export const REFERENCE_LINKS = [
   { name: 'Conducting Techniques', url: 'https://www.churchofjesuschrist.org/study/manual/conducting-course' }
 ];
 
-export const API_BASE_URL = typeof window !== 'undefined' &&
-  (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
-  ? 'https://music-assist-backend.onrender.com' // Updated for Render: Use full backend URL
-  : 'http://127.0.0.1:8080'; // Match backend port
+const isLocalHost = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// VITE_API_BASE_URL (frontend/.env.development, frontend/.env.production) wins when set;
+// otherwise fall back to a hostname-based guess so the app still works without it configured.
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ||
+  (isLocalHost ? 'http://127.0.0.1:8080' : 'https://music-assist-backend.onrender.com');

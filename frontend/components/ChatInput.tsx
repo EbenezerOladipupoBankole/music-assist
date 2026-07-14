@@ -1,6 +1,5 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { COLORS } from '../constants.ts';
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -10,19 +9,19 @@ interface ChatInputProps {
 const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled }) => {
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<any>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognitionInstance = new SpeechRecognition();
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognitionCtor) {
+      const recognitionInstance = new SpeechRecognitionCtor();
       recognitionInstance.continuous = false;
       recognitionInstance.interimResults = false;
       recognitionInstance.lang = 'en-US';
 
       recognitionInstance.onstart = () => setIsListening(true);
-      recognitionInstance.onresult = (event: any) => {
+      recognitionInstance.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setInput((prev) => (prev ? `${prev.trim()} ${transcript}` : transcript));
         setIsListening(false);

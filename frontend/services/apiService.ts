@@ -1,8 +1,17 @@
-import { Message } from '../types';
+import { Message, SavedConversation } from '../types.ts';
 import { API_BASE_URL } from '../constants.ts';
 
+/** Shape of the metadata chunk emitted by the streaming endpoint. */
+export interface ChatMetadata {
+  type: 'metadata';
+  conversation_id?: string;
+  sources?: Array<{ title: string; url: string; type?: string }>;
+  audio_url?: string;
+  audio_title?: string;
+}
+
 export const musicAssistApi = {
-  sendMessage: async (text: string, history: Message[], conversationId?: string | null, userId?: string | null, userName?: string | null) => {
+  sendMessage: async (text: string, conversationId?: string | null, userId?: string | null, userName?: string | null) => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
@@ -30,12 +39,12 @@ export const musicAssistApi = {
 
   streamMessage: async (
     text: string,
-    history: Message[],
     conversationId: string | null,
     userId: string | null,
     userName: string | null,
     onChunk: (chunk: string) => void,
-    onMetadata: (metadata: any) => void
+    onMetadata: (metadata: ChatMetadata) => void,
+    signal?: AbortSignal
   ) => {
     try {
       const response = await fetch(`${API_BASE_URL}/chat/stream`, {
@@ -49,6 +58,7 @@ export const musicAssistApi = {
           user_id: userId,
           user_name: userName
         }),
+        signal,
       });
 
       if (!response.ok) {
@@ -71,17 +81,26 @@ export const musicAssistApi = {
 
         for (const line of lines) {
           if (!line.trim()) continue;
+
+          let data: { type: string; message?: string; delta?: string } | undefined;
           try {
-            const data = JSON.parse(line);
-            if (data.type === "metadata") {
-              onMetadata(data);
-            } else if (data.type === "content") {
-              onChunk(data.delta);
-            } else if (data.type === "error") {
-              throw new Error(data.message);
-            }
+            data = JSON.parse(line);
           } catch (e) {
             console.warn("Failed to parse chunk:", line, e);
+            continue;
+          }
+          if (!data) continue;
+
+          // A server-sent "error" event must actually fail the request - it
+          // used to be thrown inside the JSON.parse try/catch above, where it
+          // was caught by the same handler and silently logged as a parse
+          // warning instead of propagating.
+          if (data.type === "error") {
+            throw new Error(data.message);
+          } else if (data.type === "metadata") {
+            onMetadata(data as ChatMetadata);
+          } else if (data.type === "content") {
+            onChunk(data.delta ?? '');
           }
         }
       }
@@ -89,5 +108,21 @@ export const musicAssistApi = {
       console.error("Streaming API Error:", error);
       throw error;
     }
-  }
+  },
+
+  getUserConversations: async (userId: string, signal?: AbortSignal): Promise<SavedConversation[]> => {
+    const response = await fetch(`${API_BASE_URL}/conversations/${userId}`, { signal });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch conversations: ${response.status}`);
+    }
+    return response.json();
+  },
+
+  getConversationHistory: async (conversationId: string, signal?: AbortSignal): Promise<Message[]> => {
+    const response = await fetch(`${API_BASE_URL}/conversations/${conversationId}/history`, { signal });
+    if (!response.ok) {
+      throw new Error(`Failed to load conversation: ${response.status}`);
+    }
+    return response.json();
+  },
 };
