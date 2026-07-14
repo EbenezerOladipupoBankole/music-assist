@@ -1,7 +1,7 @@
-import os
-import requests
 import logging
-from typing import Optional
+import os
+
+import requests
 
 logger = logging.getLogger(__name__)
 

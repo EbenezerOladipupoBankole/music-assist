@@ -2,11 +2,11 @@
 Conversation Memory Module using Firebase Firestore
 """
 
-import os
-import firebase_admin
-from firebase_admin import credentials, firestore
-from typing import List, Tuple
 import logging
+from typing import List, Tuple
+
+import firebase_admin
+from firebase_admin import firestore
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,16 +27,15 @@ class FirebaseConversationMemory:
         try:
             # Ensure app is initialized (should be done by main.py)
             if not firebase_admin._apps:
-                print("DEBUG: No Firebase apps found in memory, initializing with defaults...")
+                logger.info("No Firebase apps found in memory, initializing with defaults...")
                 firebase_admin.initialize_app()
-            
+
             self.db = firestore.client()
             logger.info("✅ Firebase Firestore initialized successfully for conversation memory.")
         except Exception as e:
-            print(f"CRITICAL DEBUG: Firebase/Firestore initialization failed with error: {e}")
-            logger.warning(f"🔥 Firebase initialization failed: {e}")
+            logger.error(f"🔥 Firebase/Firestore initialization failed: {e}")
             logger.warning("Conversation memory will be IN-MEMORY ONLY.")
-            self.db = None 
+            self.db = None
 
     def get_history(self, conversation_id: str) -> List[Tuple[str, str]]:
         """Retrieve conversation history."""
@@ -96,7 +95,7 @@ class FirebaseConversationMemory:
                 'timestamp': firestore.SERVER_TIMESTAMP
             })
 
-            logger.info(f"✅ Saved successfully to Firestore")
+            logger.info("✅ Saved successfully to Firestore")
 
         except Exception as e:
             logger.error(f"❌ Error saving message to Firestore: {e}")
@@ -128,8 +127,10 @@ class FirebaseConversationMemory:
             # Robust sort
             def get_ts(x):
                 lu = x.get('last_updated')
-                if lu is None: return 0
-                if hasattr(lu, 'timestamp'): return lu.timestamp()
+                if lu is None:
+                    return 0
+                if hasattr(lu, 'timestamp'):
+                    return lu.timestamp()
                 return 0
 
             conversations.sort(key=get_ts, reverse=True)

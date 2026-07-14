@@ -4,7 +4,8 @@ Manages hymn audio links and searching for the Music-Assist API
 """
 
 import re
-from typing import List, Dict
+from typing import Dict, List
+
 
 class HymnPlayer:
     """

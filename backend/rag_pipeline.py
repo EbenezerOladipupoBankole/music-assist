@@ -3,14 +3,23 @@ RAG Pipeline for Music-Assist
 Handles document retrieval, embedding, and LLM interaction
 """
 
-import os
-import json
-import time
-import logging
-import re
-from typing import List, Dict, Optional, Tuple
-from datetime import datetime
 import asyncio
+import json
+import logging
+import os
+import re
+import time
+from datetime import datetime
+from typing import Dict, List, Optional
+
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+from config import settings
+from interfaces import ConversationMemory
+from web_search import ChurchMusicWebSearch, is_music_related_question
 
 # Configure logging
 logging.basicConfig(
@@ -18,38 +27,6 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
-
-# Production Configuration Constants - MAXIMUM SPEED OPTIMIZATION
-CONFIG = {
-    'MAX_CONTEXT_LENGTH': 3200, # Balanced context for quality and speed
-    'MAX_RETRIES': 3,           # Production resilience
-    'RETRY_BASE_DELAY': 0.5,
-    'REQUEST_TIMEOUT': 45,      # Increased for stability
-    'MAX_TOKENS': 1000,         # Allow longer comprehensive answers
-    'TEMPERATURE': 0.2,         # Slight personality while remaining factual
-    'CHUNK_SIZE': 1000,
-    'CHUNK_OVERLAP': 150,
-    'MAX_CONVERSATION_HISTORY': 10, # Better context awareness
-    'TOP_K_RESULTS': 5,         # More chunks for better coverage
-    'FETCH_K_RESULTS': 20,      # Improved MMR selection
-    'MMR_LAMBDA': 0.6,          # Balanced relevance and diversity
-    'MIN_CONTENT_LENGTH_FOR_LOCAL': 400,
-    'MIN_DOC_LENGTH_FOR_WEB': 600, 
-    'COST_PER_1K_INPUT_TOKENS': 0.00015,
-    'COST_PER_1K_OUTPUT_TOKENS': 0.0006,
-}
-
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-from langchain_community.vectorstores import FAISS
-from langchain_core.prompts import PromptTemplate
-from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, AIMessage
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-
-# Import web search capabilities
-from web_search import ChurchMusicWebSearch, is_music_related_question
 
 
 class RAGPipeline:
@@ -81,8 +58,8 @@ class RAGPipeline:
         """Initialize RAG pipeline with production configuration."""
         self.vector_db_path = vector_db_path
         self.model_name = model_name
-        self.chunk_size = chunk_size or CONFIG['CHUNK_SIZE']
-        self.chunk_overlap = chunk_overlap or CONFIG['CHUNK_OVERLAP']
+        self.chunk_size = chunk_size or settings.chunk_size
+        self.chunk_overlap = chunk_overlap or settings.chunk_overlap
         
         # Cost tracking
         self.total_input_tokens = 0
@@ -90,20 +67,25 @@ class RAGPipeline:
         self.total_queries = 0
         self.failed_queries = 0
         
+        # Ensure OPENAI_API_KEY is available
+        openai_key = os.getenv("OPENAI_API_KEY")
+        if not openai_key:
+            raise ValueError("OPENAI_API_KEY environment variable is missing. It is required for RAG pipeline.")
+            
         # Initialize components
         self.embeddings = OpenAIEmbeddings(
-            openai_api_key=os.getenv("OPENAI_API_KEY")
+            openai_api_key=openai_key
         )
         
         self.llm = ChatOpenAI(
             model_name=model_name,
-            temperature=CONFIG['TEMPERATURE'],
-            max_tokens=CONFIG['MAX_TOKENS'],
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            request_timeout=CONFIG['REQUEST_TIMEOUT']
+            temperature=settings.temperature,
+            max_tokens=settings.max_tokens,
+            openai_api_key=openai_key,
+            request_timeout=settings.request_timeout
         )
-        
-        logger.info(f"Initialized RAG Pipeline: model={model_name}, max_tokens={CONFIG['MAX_TOKENS']}")
+
+        logger.info(f"Initialized RAG Pipeline: model={model_name}, max_tokens={settings.max_tokens}")
         
         # Improved text splitter with better separators for preserving context
         # Separators ordered by preference - tries to break at natural boundaries
@@ -126,8 +108,8 @@ class RAGPipeline:
         )
         
         self.vector_store = None
-        self.qa_chain = None
-        self.memory = None # Conversation memory
+        self._ready = False  # True once vector_store is loaded and queryable
+        self.memory: Optional[ConversationMemory] = None # Conversation memory - SQLite or Firestore
         self._local_conversations = set() # Track active convos for stats
         
         # Response cache for instant repeat queries (max 50 entries)
@@ -140,10 +122,14 @@ class RAGPipeline:
     async def initialize(self):
         """Initialize or load vector store"""
         try:
-            # Initialize conversation memory (SQLite - simple and reliable)
-            from sqlite_memory import SQLiteConversationMemory
+            # Initialize conversation memory backend per settings.memory_backend
             if not self.memory:
-                self.memory = SQLiteConversationMemory()
+                if settings.memory_backend == "firebase":
+                    from firebase_memory import FirebaseConversationMemory
+                    self.memory = FirebaseConversationMemory()
+                else:
+                    from sqlite_memory import SQLiteConversationMemory
+                    self.memory = SQLiteConversationMemory()
 
             # Try to load existing vector store - check for actual index file
             index_file = os.path.join(self.vector_db_path, "index.faiss")
@@ -152,6 +138,9 @@ class RAGPipeline:
             loaded = False
             if os.path.exists(index_file):
                 try:
+                    # Safe here: this index is produced by our own rebuild_index.py /
+                    # populate_db.py scripts, never uploaded by a user, so deserializing
+                    # the pickled docstore carries no untrusted-input risk.
                     self.vector_store = FAISS.load_local(
                         self.vector_db_path,
                         self.embeddings,
@@ -173,100 +162,60 @@ class RAGPipeline:
                         metadatas=[{"source": "system", "type": "placeholder"}]
                     )
                 except Exception as e:
-                    print(f"[WARNING] Could not create placeholder vector store: {e}")
-                    print("  Server will start in limited mode (IN-MEMORY ONLY) until crawler is run")
+                    logger.warning(f"Could not create placeholder vector store: {e}")
+                    logger.warning("Server will start in limited mode (IN-MEMORY ONLY) until crawler is run")
                     self.vector_store = None
                 
-            # Initialize QA chain (if vector store available)
-            if self.vector_store:
-                self._initialize_qa_chain()
+            self._ready = self.vector_store is not None
 
-            # Initialize conversation memory
-            if not self.memory:
-                self.memory = FirebaseConversationMemory()
-            
-        except Exception as e:
-            print(f"Error initializing RAG pipeline: {e}")
+        except Exception:
+            logger.error("Error initializing RAG pipeline", exc_info=True)
             # Don't raise; allow server to start so /crawl/trigger can be used
     
-    def _initialize_qa_chain(self):
-        """Initialize the conversational QA chain using LCEL"""
-        
-        # Create retriever with optimized search for maximum answer coverage
-        # MMR (Maximal Marginal Relevance) finds diverse relevant results
-        # fetch_k=30 means: search through 30 candidates to ensure we find answers
-        # k=10 means: return top 10 most relevant chunks (increased for comprehensive coverage)
-        # lambda_mult=0.5 means: 50/50 balance between relevance and diversity
-        #   - Lower lambda = more diversity (catches related topics)
-        #   - Higher lambda = more similarity
-        retriever = self.vector_store.as_retriever(
+    def _build_retriever(self):
+        """MMR retriever over the vector store, tuned for max answer coverage.
+
+        MMR (Maximal Marginal Relevance) finds diverse relevant results:
+        fetch_k candidates are searched, the top k are returned, and lambda_mult
+        balances relevance vs. diversity (lower = more diversity/related topics,
+        higher = more strict similarity).
+        """
+        return self.vector_store.as_retriever(
             search_type="mmr",
             search_kwargs={
-                "k": CONFIG['TOP_K_RESULTS'],
-                "fetch_k": CONFIG['FETCH_K_RESULTS'],
-                "lambda_mult": CONFIG['MMR_LAMBDA']
+                "k": settings.top_k_results,
+                "fetch_k": settings.fetch_k_results,
+                "lambda_mult": settings.mmr_lambda,
             }
         )
-        
-        # Professional, balanced prompt for quality responses
-        qa_system_prompt = """You are Music-Assist, a professional and authoritative AI researcher for the Church of Jesus Christ of Latter-day Saints music community.
 
-Your objective is to provide high-quality, professional, and reliable information grounded in official Church resources.
-
-TONE & STYLE:
-1. Professional & Respectful: Speak with the authority of a researcher. Use clear, sophisticated language.
-2. Structured: Use Markdown for clarity. Use **bolding** for important terms and bullet points for lists.
-3. Concise yet Thorough: Provide the complete answer, but avoid unnecessary conversational filler.
-
-RESPONSE RULES:
-1. Primary Source: Use the CONTEXT provided below. If the information is not present, state: "My current knowledge base does not contain specific details on this, but you may find it in the General Handbook or the official Church Music Library."
-2. Citations: Always mention relevant source titles or Handbook sections (e.g., "According to General Handbook 19.4...") if they appear in the context.
-3. Music Specifics: Always provide hymn numbers, composer names, and specific policy details when available.
+    def _build_prompt(self, query: str, context: str, conversation_history: str = "") -> str:
+        """Single prompt template shared by streaming and non-streaming generation,
+        so the two response paths can't silently drift into different assistant
+        behavior (they used to each hand-roll their own)."""
+        history_section = ""
+        if conversation_history:
+            history_section = f"""
+===== CONVERSATION HISTORY =====
+{conversation_history}
+===== END CONVERSATION HISTORY =====
+"""
+        return f"""You are Music-Assist, a professional LDS Church music expert.
+{history_section}
+RULES:
+1. Use CONTEXT below as your only source.
+2. If asked 'what is hymn X' or 'which hymn is number X', respond with ONLY the TITLE of the hymn in bold, nothing else.
+3. For general questions, be direct - give specific numbers, names, and handbook sections.
+4. Use Markdown (lists, bolding, tables) where it aids clarity.
+5. Keep it thorough but under 150 words.
 
 CONTEXT:
 {context}
 
-User Inquiry: {question}
+Question: {query}
 
-Response:"""
+Answer:"""
 
-        qa_prompt = PromptTemplate(
-            template=qa_system_prompt,
-            input_variables=["context", "question"]
-        )
-        
-        # Enhanced document formatter - includes source information for better context
-        def format_docs(docs):
-            """Format retrieved documents with metadata for richer context"""
-            formatted_parts = []
-            for i, doc in enumerate(docs, 1):
-                # Extract metadata
-                source = doc.metadata.get('source', 'Unknown source')
-                title = doc.metadata.get('title', '')
-                
-                # Format with source info for better AI understanding
-                doc_text = f"[Passage {i}]"
-                if title:
-                    doc_text += f" From: {title}"
-                if source and not source.startswith('system'):
-                    doc_text += f" (Source: {source})"
-                doc_text += f"\n{doc.page_content.strip()}"
-                
-                formatted_parts.append(doc_text)
-            
-            return "\n\n---\n\n".join(formatted_parts)
-        
-        # Build LCEL chain
-        self.qa_chain = (
-            {
-                "context": retriever | format_docs,
-                "question": RunnablePassthrough()
-            }
-            | qa_prompt
-            | self.llm
-            | StrOutputParser()
-        )
-    
     async def query(
         self,
         query: str,
@@ -304,10 +253,30 @@ Response:"""
             # STEP 0: Input validation and sanitization
             query = self._validate_and_sanitize_input(query)
             self.total_queries += 1
-            
-            # STEP 0.5: Check cache for instant response
+
+            # STEP 1: Load conversation history and detect whether this is a
+            # context-dependent follow-up ("tell me more", "explain that further").
+            # This has to happen *before* the cache lookup below: the response
+            # cache is keyed only on query text, so a context-dependent query
+            # can't be served from a cache entry that was generated for a
+            # different user's different conversation.
+            has_history = False
+            last_question = ""
+            if conversation_id:
+                history = await asyncio.to_thread(self.memory.get_history, conversation_id)
+                has_history = bool(history)
+                if has_history:
+                    # Get the very last question from the user in history
+                    last_question = history[-1][0]
+
+            is_pure_followup = has_history and len(query.split()) < 12 and any(
+                w in query.lower() for w in
+                ["more", "further", "simple", "it", "that", "why", "elaborate", "layman", "tell me", "explain"]
+            )
+
+            # STEP 0.5: Check cache for instant response (stateless queries only)
             cache_key = query.lower().strip()
-            if cache_key in self._response_cache:
+            if not is_pure_followup and cache_key in self._response_cache:
                 logger.info(f"⚡ Cache HIT for query: {query[:50]}...")
                 cached_result = self._response_cache[cache_key].copy()
                 cached_result["conversation_id"] = conversation_id or "cached"
@@ -317,18 +286,8 @@ Response:"""
                 if conversation_id and user_id:
                     await asyncio.to_thread(self.memory.add_message, conversation_id, query, cached_result["answer"], user_id)
                 return cached_result
-            
+
             logger.info(f"Processing query (conv_id={conversation_id}): {query[:100]}...")
-            
-            # STEP 1: Validate topic and AUGMENT query if it's a follow-up
-            has_history = False
-            last_question = ""
-            if conversation_id:
-                history = await asyncio.to_thread(self.memory.get_history, conversation_id)
-                has_history = bool(history)
-                if has_history:
-                    # Get the very last question from the user in history
-                    last_question = history[-1][0] 
 
             if not is_music_related_question(query, has_history=has_history):
                 logger.info(f"Off-topic query detected: {query[:50]}")
@@ -346,11 +305,11 @@ Response:"""
                     }
                 }
             
-            # Auto-recovery: If chain is missing, try to load it again (maybe DB was just built)
-            if self.qa_chain is None:
+            # Auto-recovery: If not ready, try to load it again (maybe DB was just built)
+            if not self._ready:
                 await self.initialize()
 
-            if self.qa_chain is None:
+            if not self._ready:
                 return {
                     "answer": (
                         "⚠️ **Knowledge Base Not Initialized**\n\n"
@@ -383,15 +342,13 @@ Response:"""
             # Get conversation history for context from Firebase/memory
             conversation_history_str = await self._get_formatted_conversation_history(conversation_id)
             
-            # 🚀 NEW: RE-WRITE QUERY FOR BETTER RETRIEVAL
-            # If the user says "tell me more" or "into layman terms", 
+            # RE-WRITE QUERY FOR BETTER RETRIEVAL
+            # If the user says "tell me more" or "into layman terms",
             # we combine it with the previous question so the database search knows what to look for.
             search_query = query
-            if has_history and len(query.split()) < 12:
-                is_pure_followup = any(w in query.lower() for w in ["more", "further", "simple", "it", "that", "why", "elaborate", "layman", "tell me", "explain"])
-                if is_pure_followup:
-                    search_query = f"{last_question} {query}"
-                    logger.info(f"Augmented search query: {search_query}")
+            if is_pure_followup:
+                search_query = f"{last_question} {query}"
+                logger.info(f"Augmented search query: {search_query}")
 
             # STEP 2: Try local vector store first
             search_start = time.time()
@@ -404,30 +361,24 @@ Response:"""
             
             web_results = []
             if needs_web_search:
-                print(f"[INFO] Local data insufficient, searching Church websites...")
+                logger.info("Local data insufficient, searching Church websites...")
                 web_start = time.time()
                 web_results = await self.web_searcher.search(query)
                 metrics['web_results_count'] = len(web_results)
                 metrics['search_time_ms'] += int((time.time() - web_start) * 1000)
-                print(f"[INFO] Found {len(web_results)} web results")
-            
+                logger.info(f"Found {len(web_results)} web results")
+
             # STEP 4: Combine local + web context
             combined_context = self._combine_contexts(local_docs, web_results)
-            
+
             # STEP 4.5: Calculate confidence level for this query
             confidence_level = self._calculate_confidence(local_docs, web_results, query)
-            
+
             # STEP 5: Generate answer with combined context
             gen_start = time.time()
             result = await self._generate_answer(query, combined_context, conversation_history_str)
             metrics['generation_time_ms'] = int((time.time() - gen_start) * 1000)
-            
-            # STEP 5.5: Add confidence disclaimer if needed
-            if confidence_level == "low":
-                result = self._add_confidence_disclaimer(result, "low", web_results)
-            elif confidence_level == "medium" and web_results:
-                result = self._add_confidence_disclaimer(result, "medium", web_results)
-            
+
             # Estimate tokens and cost
             input_text = combined_context + query + conversation_history_str
             output_text = result
@@ -435,8 +386,8 @@ Response:"""
             metrics['output_tokens_estimated'] = int(len(output_text.split()) * 1.3)
             
             # Calculate cost
-            input_cost = (metrics['input_tokens_estimated'] / 1000) * CONFIG['COST_PER_1K_INPUT_TOKENS']
-            output_cost = (metrics['output_tokens_estimated'] / 1000) * CONFIG['COST_PER_1K_OUTPUT_TOKENS']
+            input_cost = (metrics['input_tokens_estimated'] / 1000) * settings.cost_per_1k_input_tokens
+            output_cost = (metrics['output_tokens_estimated'] / 1000) * settings.cost_per_1k_output_tokens
             metrics['cost_usd'] = round(input_cost + output_cost, 6)
             
             # Update global cost tracking
@@ -469,11 +420,14 @@ Response:"""
                 }
             }
             
-            # Maintain cache size
-            if len(self._response_cache) >= self._cache_max_size:
-                # Remove first key (simple FIFO)
-                self._response_cache.pop(next(iter(self._response_cache)))
-            self._response_cache[cache_key] = final_result
+            # Cache only stateless/context-free answers - a follow-up's answer is
+            # only valid for the conversation it was generated in, so it must
+            # never be served back out to a different conversation via the cache.
+            if not is_pure_followup:
+                if len(self._response_cache) >= self._cache_max_size:
+                    # Remove first key (simple FIFO)
+                    self._response_cache.pop(next(iter(self._response_cache)))
+                self._response_cache[cache_key] = final_result
 
             # Update conversation history in SQLite (Background thread)
             await asyncio.to_thread(self.memory.add_message, conversation_id, query, result, user_id)
@@ -503,7 +457,6 @@ Response:"""
         Streaming version of current RAG pipeline query.
         Yields JSON chunks for metadata and content deltas.
         """
-        start_time = time.time()
         try:
             # 1. Validation
             query = self._validate_and_sanitize_input(query)
@@ -524,7 +477,7 @@ Response:"""
                  return
 
             # 3. Retrieval
-            if self.qa_chain is None:
+            if not self._ready:
                 await self.initialize()
             
             search_query = query
@@ -552,7 +505,7 @@ Response:"""
 
             # 4. Generate & Stream
             conv_history = await self._get_formatted_conversation_history(conversation_id)
-            prompt = self._prepare_streaming_prompt(query, combined_context, conv_history)
+            prompt = self._build_prompt(query, combined_context, conv_history)
 
             full_answer = ""
             async for chunk in self.llm.astream(prompt):
@@ -568,23 +521,6 @@ Response:"""
             logger.error(f"Streaming failed: {e}")
             yield json.dumps({"type": "error", "message": str(e)})
 
-    def _prepare_streaming_prompt(self, query: str, context: str, history: str) -> str:
-        history_part = f"\n\n===== HISTORY =====\n{history}" if history else ""
-        return f"""You are Music-Assist, a professional LDS music expert.
-{history_part}
-
-Follow these strictly:
-1. Use the CONTEXT below to answer.
-2. Be professional, structured, and use Markdown (tables, lists, bolding).
-3. Be direct. If you don't know, suggest the General Handbook section 19.
-4. Keep it thorough but under 150 words.
-
-CONTEXT:
-{context}
-
-Question: {query}
-Answer:"""
-    
     async def add_documents(self, documents: List[Dict]):
         """
         Add new documents to the vector store
@@ -616,15 +552,14 @@ Answer:"""
             else:
                 self.vector_store.add_documents(splits)
             
-            # Save vector store
-            self.vector_store.save_local(self.vector_db_path)
-            
+            # Save vector store (blocking disk I/O - offload so it doesn't stall the event loop)
+            await asyncio.to_thread(self.vector_store.save_local, self.vector_db_path)
+
             abs_path = os.path.abspath(self.vector_db_path)
             logger.info(f"Added {len(documents)} documents ({len(splits)} chunks)")
             logger.info(f"Saved vector store to: {abs_path}")
-            
-            # Reinitialize QA chain with updated vector store
-            self._initialize_qa_chain()
+
+            self._ready = True
             
         except Exception as e:
             if "insufficient_quota" in str(e) or "429" in str(e):
@@ -643,71 +578,81 @@ Answer:"""
             raise PermissionError("The knowledge base cannot be modified at runtime in this environment.")
 
         try:
-            # Directories to search for data
-            data_dirs = ["./data/crawled", "./data/structured", "./data/music_theory"]
-            documents = []
-            
-            for d in data_dirs:
-                if not os.path.exists(d):
-                    logger.warning(f"Directory not found during rebuild: {d}")
-                    continue
-                
-                logger.info(f"Processing files from {d}...")
-                for filename in os.listdir(d):
-                    if filename.endswith(".json"):
-                        try:
-                            with open(os.path.join(d, filename), 'r', encoding='utf-8') as f:
-                                data = json.load(f)
-                                
-                                # Extract content based on format (structured vs crawled)
-                                content = ""
-                                metadata = {"source_file": filename, "directory": d}
-                                
-                                if "searchable_content" in data:
-                                    # Structured hymn metadata
-                                    content = data["searchable_content"]
-                                    metadata.update({
-                                        "title": data.get("title", ""),
-                                        "number": data.get("number", 0),
-                                        "type": "hymn_metadata"
-                                    })
-                                elif "content" in data:
-                                    # Standard crawled document
-                                    content = data["content"]
-                                    metadata.update({
-                                        "source": data.get("url", ""),
-                                        "title": data.get("title", ""),
-                                        "timestamp": data.get("timestamp", "")
-                                    })
-                                
-                                if content and len(content) > 10:
-                                    documents.append({
-                                        "content": content,
-                                        "metadata": metadata
-                                    })
-                        except Exception as file_error:
-                            logger.error(f"Error reading file {filename} in {d}: {file_error}")
-            
+            # Directory scanning + file reads are blocking disk I/O; run them off
+            # the event loop instead of stalling every other in-flight request.
+            documents = await asyncio.to_thread(self._load_documents_from_disk)
+
             if not documents:
                 raise ValueError("No documents found to index")
-            
+
             # Rebuild vector store
             await self.add_documents(documents)
-            
+
             return {"status": "success", "documents_indexed": len(documents)}
-            
+
         except Exception as e:
-            print(f"Error rebuilding vector store: {e}")
+            logger.error(f"Error rebuilding vector store: {e}", exc_info=True)
             raise
+
+    def _load_documents_from_disk(self) -> List[Dict]:
+        """Read every crawled/structured JSON doc into {content, metadata} dicts.
+
+        Synchronous by design - callers must run this via asyncio.to_thread.
+        """
+        data_dirs = ["./data/crawled", "./data/structured", "./data/music_theory"]
+        documents = []
+
+        for d in data_dirs:
+            if not os.path.exists(d):
+                logger.warning(f"Directory not found during rebuild: {d}")
+                continue
+
+            logger.info(f"Processing files from {d}...")
+            for filename in os.listdir(d):
+                if filename.endswith(".json"):
+                    try:
+                        with open(os.path.join(d, filename), 'r', encoding='utf-8') as f:
+                            data = json.load(f)
+
+                            # Extract content based on format (structured vs crawled)
+                            content = ""
+                            metadata = {"source_file": filename, "directory": d}
+
+                            if "searchable_content" in data:
+                                # Structured hymn metadata
+                                content = data["searchable_content"]
+                                metadata.update({
+                                    "title": data.get("title", ""),
+                                    "number": data.get("number", 0),
+                                    "type": "hymn_metadata"
+                                })
+                            elif "content" in data:
+                                # Standard crawled document
+                                content = data["content"]
+                                metadata.update({
+                                    "source": data.get("url", ""),
+                                    "title": data.get("title", ""),
+                                    "timestamp": data.get("timestamp", "")
+                                })
+
+                            if content and len(content) > 10:
+                                documents.append({
+                                    "content": content,
+                                    "metadata": metadata
+                                })
+                    except Exception as file_error:
+                        logger.error(f"Error reading file {filename} in {d}: {file_error}")
+
+        return documents
     
     async def get_stats(self) -> Dict:
         """Get comprehensive pipeline statistics for monitoring."""
         try:
             # Calculate total cost
-            total_input_cost = (self.total_input_tokens / 1000) * CONFIG['COST_PER_1K_INPUT_TOKENS']
-            total_output_cost = (self.total_output_tokens / 1000) * CONFIG['COST_PER_1K_OUTPUT_TOKENS']
+            total_input_cost = (self.total_input_tokens / 1000) * settings.cost_per_1k_input_tokens
+            total_output_cost = (self.total_output_tokens / 1000) * settings.cost_per_1k_output_tokens
             total_cost = total_input_cost + total_output_cost
-            
+
             stats = {
                 "status": "healthy" if self.vector_store is not None else "degraded",
                 "vector_store_exists": self.vector_store is not None,
@@ -716,8 +661,8 @@ Answer:"""
                 "configuration": {
                     "chunk_size": self.chunk_size,
                     "chunk_overlap": self.chunk_overlap,
-                    "max_tokens": CONFIG['MAX_TOKENS'],
-                    "temperature": CONFIG['TEMPERATURE']
+                    "max_tokens": settings.max_tokens,
+                    "temperature": settings.temperature
                 },
                 "usage": {
                     "total_queries": self.total_queries,
@@ -793,15 +738,8 @@ Answer:"""
     async def _search_local(self, query: str) -> List[Document]:
         """Search local vector store"""
         try:
-            retriever = self.vector_store.as_retriever(
-                search_type="mmr",
-                search_kwargs={
-                    "k": CONFIG['TOP_K_RESULTS'],
-                    "fetch_k": CONFIG['FETCH_K_RESULTS'],
-                    "lambda_mult": CONFIG['MMR_LAMBDA']
-                }
-            )
-            
+            retriever = self._build_retriever()
+
             # Use invoke for LangChain retriever (get_relevant_documents is deprecated)
             docs = await asyncio.to_thread(
                 retriever.invoke,
@@ -828,7 +766,7 @@ Answer:"""
         # Detect if the local docs are just small metadata snippets (which are fine) vs generic placeholders
         is_metadata = any(doc.metadata.get('type') == 'hymn_metadata' for doc in local_docs)
         
-        if not is_metadata and avg_length < CONFIG['MIN_CONTENT_LENGTH_FOR_LOCAL']:
+        if not is_metadata and avg_length < settings.min_content_length_for_local:
             return True
 
         # 3. Person specific queries often need web data for biographies
@@ -867,7 +805,7 @@ Answer:"""
         if len(local_docs) >= 3 and not web_results:
             # Check if local docs have substantial content
             avg_length = sum(len(d.page_content) for d in local_docs[:3]) / 3
-            if avg_length > CONFIG['MIN_CONTENT_LENGTH_FOR_LOCAL']:
+            if avg_length > settings.min_content_length_for_local:
                 return "high"
         
         # Medium confidence: Some local sources, or good web results
@@ -880,12 +818,6 @@ Answer:"""
         # Low confidence: Very few sources
         return "low"
     
-    def _add_confidence_disclaimer(self, response: str, confidence: str, web_results: List[Dict]) -> str:
-        """
-        No longer adds disclaimers to responses.
-        """
-        return response
-    
     def _combine_contexts(self, local_docs: List[Document], web_results: List[Dict]) -> str:
         """
         Combine local vector store results with web search results
@@ -893,7 +825,7 @@ Answer:"""
         Returns: Formatted context string for LLM
         """
         # Context length management to prevent token overflow
-        MAX_CONTEXT_LENGTH = CONFIG['MAX_CONTEXT_LENGTH']
+        MAX_CONTEXT_LENGTH = settings.max_context_length
         current_length = 0
         context_parts = []
         
@@ -960,8 +892,8 @@ Answer:"""
     async def _generate_answer(self, query: str, context: str, conversation_history: str = "") -> str:
         """Generate answer using LLM with provided context and conversation history."""
         # Retry logic for transient failures
-        max_retries = CONFIG['MAX_RETRIES']
-        retry_delay = CONFIG['RETRY_BASE_DELAY']
+        max_retries = settings.max_retries
+        retry_delay = settings.retry_base_delay
         
         for attempt in range(max_retries):
             try:
@@ -977,28 +909,7 @@ Answer:"""
                         "Please ask a related question!"
                     )
                 
-                # Enhanced prompt with conversation context
-                conversation_context = ""
-                if conversation_history:
-                    conversation_context = f"""\n===== CONVERSATION HISTORY =====
-{conversation_history}
-===== END CONVERSATION HISTORY =====\n\n"""
-                
-                prompt = f"""You are Music-Assist, an LDS Church music expert.
-{conversation_context}
-RULES:
-1. Use CONTEXT below as your only source
-2. If asked 'what is hymn X' or 'which hymn is number X', respond with ONLY the TITLE of the hymn in bold, nothing else.
-3. For general questions, be direct - give specific numbers, names, and handbook sections
-4. Use lists (<ul>, <li>) where possible
-5. Under 100 words
-
-CONTEXT:
-{context}
-
-Question: {query}
-
-Answer:"""
+                prompt = self._build_prompt(query, context, conversation_history)
 
                 response = await asyncio.to_thread(
                     self.llm.invoke,

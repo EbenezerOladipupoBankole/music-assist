@@ -1,11 +1,21 @@
 import asyncio
 import os
+import sys
+
 from dotenv import load_dotenv
+
 from crawler import ChurchMusicCrawler
 from rag_pipeline import RAGPipeline
 
 # Load environment variables
 load_dotenv()
+
+# Windows' default console/redirect encoding (cp1252) can't encode this
+# script's emoji output, which crashes print() outright. UTF-8 output
+# encoding is available on stdout/stderr since Python 3.7.
+if sys.stdout.encoding is not None and sys.stdout.encoding.lower() != "utf-8":
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 async def main():
     print("🚀 Starting Database Population Script")

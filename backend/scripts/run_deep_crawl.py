@@ -1,5 +1,7 @@
 import asyncio
+
 from crawler import ChurchMusicCrawler
+
 
 async def run_deep_crawl():
     # Deeper crawl settings for better knowledge coverage

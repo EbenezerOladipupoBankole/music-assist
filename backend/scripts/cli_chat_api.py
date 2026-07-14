@@ -1,10 +1,9 @@
-import urllib.request
-import json
-import sys
-import subprocess
-import shutil
-import re
 import html
+import json
+import re
+import shutil
+import subprocess
+import urllib.request
 
 # Configuration
 API_URL = "http://127.0.0.1:8080/chat"
@@ -79,7 +78,7 @@ def chat():
                 
         except urllib.error.HTTPError as e:
             print(f"\n[!] Server Error ({e.code}): {e.reason}")
-            print(f"    Check the backend terminal for details (e.g., missing API Key).\n")
+            print("    Check the backend terminal for details (e.g., missing API Key).\n")
             
         except urllib.error.URLError:
             print("\n[!] Error: Could not connect to server.")

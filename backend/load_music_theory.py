@@ -5,10 +5,11 @@ Adds educational content to existing crawled data
 
 import asyncio
 import json
-import os
 from pathlib import Path
-from rag_pipeline import RAGPipeline
+
 from dotenv import load_dotenv
+
+from rag_pipeline import RAGPipeline
 
 load_dotenv()
 

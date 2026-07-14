@@ -1,6 +1,8 @@
 import asyncio
 import os
+
 from dotenv import load_dotenv
+
 from rag_pipeline import RAGPipeline
 
 # Load env vars

@@ -4,14 +4,15 @@ Responsibly crawls official LDS music websites for text content
 """
 
 import asyncio
-import aiohttp
-from bs4 import BeautifulSoup
-from typing import List, Dict, Set
-from urllib.parse import urljoin, urlparse
 import json
 import os
-from datetime import datetime
 import time
+from datetime import datetime
+from typing import Dict, List, Set
+from urllib.parse import urljoin, urlparse
+
+import aiohttp
+from bs4 import BeautifulSoup
 
 
 class ChurchMusicCrawler:
@@ -64,7 +65,7 @@ class ChurchMusicCrawler:
                     ".pdf", ".mp3", ".wav", ".midi"
                 ])
             )
-        except:
+        except Exception:
             return False
     
     def _extract_text_content(self, soup: BeautifulSoup) -> str:
@@ -197,7 +198,7 @@ class ChurchMusicCrawler:
             content = self._extract_text_content(soup)
             
             if not content or len(content) < 100:
-                print(f"  [X] Insufficient content")
+                print("  [X] Insufficient content")
                 return None
             
             # Extract metadata
@@ -229,7 +230,7 @@ class ChurchMusicCrawler:
             return {"document": document, "links": []}
             
         except asyncio.TimeoutError:
-            print(f"  [X] Timeout")
+            print("  [X] Timeout")
             return None
         except Exception as e:
             print(f"  [X] Error: {e}")
@@ -268,7 +269,7 @@ class ChurchMusicCrawler:
         elapsed = time.time() - start_time
         
         print(f"\n{'='*60}")
-        print(f"Crawl complete!")
+        print("Crawl complete!")
         print(f"  Documents: {len(self.crawled_data)}")
         print(f"  Pages visited: {len(self.visited_urls)}")
         print(f"  Time: {elapsed:.1f}s")

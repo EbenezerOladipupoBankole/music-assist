@@ -3,11 +3,13 @@ Interactive Terminal Chat for Music-Assist RAG
 Chat with the RAG pipeline directly through the terminal
 """
 import asyncio
-import sys
 import os
+import sys
 from datetime import datetime
-from rag_pipeline import RAGPipeline
+
 from dotenv import load_dotenv
+
+from rag_pipeline import RAGPipeline
 
 # Load environment variables
 load_dotenv()
@@ -33,7 +35,7 @@ class TerminalChat:
             await self.rag.initialize()
             
             print("✅ RAG Pipeline initialized successfully!")
-            print(f"📚 Vector store loaded")
+            print("📚 Vector store loaded")
             print("="*70)
             return True
             
@@ -95,7 +97,7 @@ class TerminalChat:
                 elapsed = asyncio.get_event_loop().time() - start_time
                 
                 # Print response
-                print(f"\n🎵 MUSIC-ASSIST:")
+                print("\n🎵 MUSIC-ASSIST:")
                 print("-"*70)
                 print(result["answer"])
                 print("-"*70)
