@@ -66,6 +66,7 @@ node_modules/
 .env
 .env.*
 frontend/.env*
+!frontend/.env.example
 
 # dataconnect generated files
 .dataconnect
@@ -76,9 +77,17 @@ backend/firebase-key.json
 # Audio Cache
 backend/data/audio_cache/
 
+# Runtime conversation memory (local dev DB, not source)
+backend/data/conversations.db
+
 # Vector Database (Too large for GitHub)
 backend/data/vector_store/
 data/vector_store/
+**/vector_store/
+**/data/data/
 index.faiss
 index.pkl
+
+# Stray build artifacts
+/dist/
 
