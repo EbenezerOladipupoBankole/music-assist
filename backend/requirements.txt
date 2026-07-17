@@ -13,7 +13,7 @@ faiss-cpu==1.14.3
 aiohttp==3.14.1
 beautifulsoup4==4.15.0
 lxml==6.1.1
-numpy==2.5.1
+numpy==2.2.6
 pandas==3.0.3
 python-dotenv==1.2.2
 firebase-admin==7.5.0
