@@ -6,8 +6,6 @@ export interface ChatMetadata {
   type: 'metadata';
   conversation_id?: string;
   sources?: Array<{ title: string; url: string; type?: string }>;
-  audio_url?: string;
-  audio_title?: string;
 }
 
 export const musicAssistApi = {

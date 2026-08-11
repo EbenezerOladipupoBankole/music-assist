@@ -43,19 +43,4 @@ describe('ChatMessage', () => {
     expect(screen.getByText(/General Handbook 19.4/)).toBeInTheDocument();
   });
 
-  it('does not render an audio player when no audioUrl is present', () => {
-    const { container } = render(<ChatMessage message={makeMessage({ sender: Sender.AI, audioUrl: undefined })} />);
-
-    expect(container.querySelector('audio')).not.toBeInTheDocument();
-  });
-
-  it('renders an audio player when audioUrl is present', () => {
-    const { container } = render(<ChatMessage message={makeMessage({
-      sender: Sender.AI,
-      audioUrl: '/audio/hymn/2',
-      audioTitle: 'The Spirit of God',
-    })} />);
-
-    expect(container.querySelector('audio')).toBeInTheDocument();
-  });
 });

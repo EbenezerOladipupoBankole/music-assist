@@ -22,8 +22,15 @@ function baseOptions(overrides: Partial<Parameters<typeof useChat>[0]> = {}) {
   };
 }
 
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  clear: vi.fn()
+};
+vi.stubGlobal('localStorage', localStorageMock);
+
 beforeEach(() => {
-  localStorage.clear();
+  localStorageMock.clear();
   streamMessageMock.mockReset();
 });
 
@@ -33,7 +40,7 @@ afterEach(() => {
 
 describe('useChat', () => {
   it('appends a user message and an AI placeholder immediately on send', async () => {
-    streamMessageMock.mockImplementation(async () => {});
+    streamMessageMock.mockImplementation(async () => { });
     const { result } = renderHook(() => useChat(baseOptions()));
 
     await act(async () => {
@@ -45,7 +52,7 @@ describe('useChat', () => {
   });
 
   it('accumulates streamed chunks into the AI message text', async () => {
-    streamMessageMock.mockImplementation(async (_text, _cid, _uid, _uname, onChunk) => {
+    streamMessageMock.mockImplementation(async (_text: any, _cid: any, _uid: any, _uname: any, onChunk: any) => {
       onChunk('Hello ');
       onChunk('world');
     });
@@ -61,7 +68,7 @@ describe('useChat', () => {
 
   it('sets the conversation id from streamed metadata and notifies onConversationPersisted', async () => {
     const onConversationPersisted = vi.fn();
-    streamMessageMock.mockImplementation(async (_text, _cid, _uid, _uname, _onChunk, onMetadata) => {
+    streamMessageMock.mockImplementation(async (_text: any, _cid: any, _uid: any, _uname: any, _onChunk: any, onMetadata: any) => {
       onMetadata({ type: 'metadata', conversation_id: 'conv_123' });
     });
 
@@ -88,7 +95,7 @@ describe('useChat', () => {
   });
 
   it('blocks unauthenticated users past the free query limit', async () => {
-    localStorage.setItem('music_assist_query_count', '5');
+    localStorageMock.getItem.mockReturnValue('5');
     const onQuotaExceeded = vi.fn();
 
     const { result } = renderHook(() => useChat(baseOptions({ isAuthenticated: false, userId: null, onQuotaExceeded })));
@@ -103,7 +110,7 @@ describe('useChat', () => {
   });
 
   it('startNewChat clears messages and the current conversation id', async () => {
-    streamMessageMock.mockImplementation(async (_text, _cid, _uid, _uname, _onChunk, onMetadata) => {
+    streamMessageMock.mockImplementation(async (_text: any, _cid: any, _uid: any, _uname: any, _onChunk: any, onMetadata: any) => {
       onMetadata({ type: 'metadata', conversation_id: 'conv_123' });
     });
     const { result } = renderHook(() => useChat(baseOptions()));

@@ -15,8 +15,6 @@ export interface Message {
   text: string;
   timestamp: number;
   sources?: Source[];
-  audioUrl?: string;
-  audioTitle?: string;
 }
 
 export interface ChatSession {

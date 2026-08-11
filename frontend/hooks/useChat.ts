@@ -124,13 +124,11 @@ export function useChat({ isAuthenticated, userId, userName, onQuotaExceeded, on
             setCurrentConversationId(metadata.conversation_id);
             onConversationPersisted();
           }
-          if (metadata.sources || metadata.audio_url) {
+          if (metadata.sources) {
             setMessages(prev => prev.map(m =>
               m.id === aiMsgId ? {
                 ...m,
                 sources: metadata.sources || m.sources,
-                audioUrl: metadata.audio_url || m.audioUrl,
-                audioTitle: metadata.audio_title || m.audioTitle,
               } : m
             ));
           }

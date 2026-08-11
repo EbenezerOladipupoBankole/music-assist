@@ -1,0 +1,71 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Lint, Type-check & Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      # -----------------------------------------------------------------------
+      # 1. Lint — ruff replaces flake8 + isort + pyupgrade in one fast pass.
+      #    Any unused import (F401), undefined name (F821), or style violation
+      #    will fail the build here before tests even run.
+      # -----------------------------------------------------------------------
+      - name: Lint with ruff
+        run: ruff check .
+
+      # -----------------------------------------------------------------------
+      # 2. Type-check — non-fatal (--warnings) to allow progressive adoption.
+      #    Once all missing hints are filled in, remove --warnings to make it
+      #    a hard gate.
+      # -----------------------------------------------------------------------
+      - name: Type-check with pyright
+        run: pyright --warnings
+        continue-on-error: true  # remove once type hints are complete
+
+      # -----------------------------------------------------------------------
+      # 3. Unit & integration tests — excludes test_qa_validation.py which
+      #    requires a live server + real OpenAI key (run in staging/nightly).
+      # -----------------------------------------------------------------------
+      - name: Run unit & integration tests
+        env:
+          OPENAI_API_KEY: sk-test-dummy-key-for-unit-tests
+        run: |
+          pytest tests/ -v --tb=short \
+            --ignore=tests/test_qa_validation.py \
+            --ignore=tests/test_firebase_memory.py
+
+      # -----------------------------------------------------------------------
+      # Optional: upload test results as a GitHub Actions artifact
+      # -----------------------------------------------------------------------
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-results
+          path: backend/.pytest_cache/
+          retention-days: 7

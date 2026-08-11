@@ -91,3 +91,37 @@ index.pkl
 # Stray build artifacts
 /dist/
 
+# --- Ironclad Security Rules ---
+
+# Virtual Environments
+venv/
+env/
+.venv/
+
+# Secrets and Credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+*.pem
+*.key
+*service_account*.json
+*credentials*.json
+
+# Databases
+*.db
+*.sqlite3
+data/
+
+# Testing and Caches
+__pycache__/
+*.pyc
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+
+# OS and IDE files
+.vscode/
+.idea/
+.DS_Store

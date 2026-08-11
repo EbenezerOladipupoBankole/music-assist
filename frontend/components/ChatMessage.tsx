@@ -3,7 +3,6 @@ import React from 'react';
 import { Message, Sender } from '../types.ts';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import AudioPlayer from './AudioPlayer.tsx';
 
 interface ChatMessageProps {
   message: Message;
@@ -49,11 +48,6 @@ const ChatMessage: React.FC<ChatMessageProps> = React.memo(({ message }) => {
             </div>
           )}
         </div>
-
-        {/* Custom Audio Player */}
-        {message.audioUrl && (
-          <AudioPlayer url={message.audioUrl} title={message.audioTitle} />
-        )}
 
         {/* Sources Section */}
         {isAI && message.sources && message.sources.length > 0 && (
