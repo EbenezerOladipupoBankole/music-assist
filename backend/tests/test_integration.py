@@ -9,19 +9,16 @@ asserting on stub behaviour.
 Run with:
     pytest tests/test_integration.py -v -s
 """
-import asyncio
 import os
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from typing import List, Optional
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-import pytest_asyncio
 
 # The dummy key must be set before rag_pipeline is imported.
 os.environ.setdefault("OPENAI_API_KEY", "sk-test-dummy-key-for-unit-tests")
 
 from rag_pipeline import RAGPipeline  # noqa: E402
-
 
 # ---------------------------------------------------------------------------
 # Shared helpers / fixtures

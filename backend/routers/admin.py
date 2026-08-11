@@ -4,7 +4,7 @@ Both require ADMIN_KEY to be set and match the caller-supplied key, compared
 with secrets.compare_digest to avoid a timing side-channel on the comparison.
 """
 import secrets
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import firebase_admin

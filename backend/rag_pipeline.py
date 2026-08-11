@@ -5,13 +5,13 @@ Handles document retrieval, embedding, and LLM interaction
 
 import asyncio
 import json
-import logging
 import os
 import re
 import time
 from datetime import datetime, timezone
 from typing import Any, AsyncGenerator, Dict, List, Optional
 
+import structlog
 from langchain_core.documents import Document
 from langchain_google_firestore import FirestoreVectorStore
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -20,8 +20,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from config import settings
 from interfaces import ConversationMemory
 from web_search import ChurchMusicWebSearch, is_music_related_question
-
-import structlog
 
 logger = structlog.get_logger(__name__)
 

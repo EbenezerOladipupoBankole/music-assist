@@ -6,10 +6,10 @@ pipeline for everything else.
 """
 import asyncio
 import json
-import structlog
 from datetime import datetime, timezone
 from typing import Optional
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 

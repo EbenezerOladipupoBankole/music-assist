@@ -7,13 +7,13 @@ import asyncio
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Set
 from urllib.parse import urljoin, urlparse
 
 import aiohttp
-from bs4 import BeautifulSoup
 import structlog
+from bs4 import BeautifulSoup
 
 logger = structlog.get_logger(__name__)
 

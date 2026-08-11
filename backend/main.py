@@ -21,8 +21,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 load_dotenv()
 
-from logging_config import setup_logging
 import structlog
+
+from logging_config import setup_logging
 
 setup_logging()
 logger = structlog.get_logger(__name__)

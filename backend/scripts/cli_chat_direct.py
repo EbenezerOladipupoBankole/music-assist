@@ -5,7 +5,7 @@ Chat with the RAG pipeline directly through the terminal
 import asyncio
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 
 from dotenv import load_dotenv
 

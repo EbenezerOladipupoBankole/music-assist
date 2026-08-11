@@ -13,8 +13,9 @@ Usage:
     pytest tests/test_qa_validation.py -v -s
 """
 import os
-import pytest
 from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 
 os.environ.setdefault("OPENAI_API_KEY", "sk-test-dummy-key-for-unit-tests")
 
@@ -24,6 +25,7 @@ def qa_client():
     """Inject a fully mocked pipeline into app.state so that dependency
     resolution reads our fake, not the lifespan-created real pipeline."""
     from fastapi.testclient import TestClient
+
     from main import app
 
     # Build a MagicMock pipeline whose query() returns a known-good dict.
