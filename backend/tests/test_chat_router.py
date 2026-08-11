@@ -1,27 +1,12 @@
 """
 Integration tests for /chat and /chat/stream, exercised through FastAPI's
-TestClient with the RAG pipeline and hymn player faked out (see conftest.py).
+TestClient with the RAG pipeline faked out (see conftest.py).
 
 Off-topic-question filtering lives inside RAGPipeline.query() itself (not the
-router), so it isn't re-tested here - see test_rag_pipeline_helpers.py and
-web_search.py's own logic for that.
+router), so it isn't re-tested here — see test_rag_pipeline_helpers.py and
+web_search.py's own logic for that coverage.
 """
 import json
-
-from hymn_player import HymnPlayer
-
-
-class _HymnPlayerWithAudio(HymnPlayer):
-    """A HymnPlayer whose top hymn has a real audio URL, for testing the
-    "has audio" branch (every hymn in the real DB currently has url=None)."""
-
-    def get_hymns(self, query):
-        return [{
-            "title": "Test Hymn With Audio",
-            "number": 999,
-            "url": "https://example.com/hymn999.mp3",
-            "tags": ["test"],
-        }]
 
 
 def test_chat_greeting_returns_canned_response(client):
@@ -56,30 +41,7 @@ def test_chat_falls_through_to_rag_pipeline_for_standard_query(client, fake_rag_
     assert body["search_method"] == "local only"
 
 
-def test_chat_hymn_without_audio_url_returns_access_note(client):
-    response = client.post("/chat", json={"message": "sing me hymn 1"})
 
-    assert response.status_code == 200
-    body = response.json()
-    assert body["audio_url"] is None
-    assert "How to Listen" in body["response"]
-    assert body["sources"][0]["title"] == "Gospel Library App"
-
-
-def test_chat_hymn_with_audio_url_returns_audio_metadata(client, monkeypatch):
-    from dependencies import get_hymn_player
-    from main import app
-
-    app.dependency_overrides[get_hymn_player] = lambda: _HymnPlayerWithAudio()
-    try:
-        response = client.post("/chat", json={"message": "sing me a hymn"})
-    finally:
-        app.dependency_overrides.pop(get_hymn_player, None)
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["audio_url"] == "/audio/hymn/999"
-    assert "Test Hymn With Audio" in body["audio_title"]
 
 
 def test_chat_returns_503_when_rag_pipeline_unavailable(client_no_rag):
@@ -104,15 +66,6 @@ def test_chat_stream_yields_metadata_and_content_chunks(client, fake_rag_pipelin
     assert "content" in types
     content_chunk = next(c for c in chunks if c["type"] == "content")
     assert content_chunk["delta"] == fake_rag_pipeline.answer
-
-
-def test_chat_stream_hymn_audio_intent_short_circuits_rag(client):
-    with client.stream("POST", "/chat/stream", json={"message": "sing me hymn 1"}) as response:
-        assert response.status_code == 200
-        chunks = [json.loads(line) for line in response.iter_lines() if line.strip()]
-
-    metadata = next(c for c in chunks if c["type"] == "metadata")
-    assert metadata["sources"][0]["title"] == "Gospel Library App"
 
 
 def test_chat_stream_greeting_short_circuits_rag(client, fake_rag_pipeline):

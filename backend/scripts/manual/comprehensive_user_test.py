@@ -6,7 +6,7 @@ Tests the RAG with realistic questions users would ask based on project goals
 import requests
 import time
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def ask_question(question: str, category: str = "") -> dict:

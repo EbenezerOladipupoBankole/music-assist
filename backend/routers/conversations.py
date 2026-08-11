@@ -1,7 +1,7 @@
 """Conversation history endpoints, backed by whichever memory implementation
 RAGPipeline was configured with."""
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends
@@ -50,7 +50,7 @@ async def get_conversation_history(
     raw_history = await asyncio.to_thread(rag_pipeline.memory.get_history, conversation_id)
 
     formatted = []
-    base_ts = int(datetime.utcnow().timestamp() * 1000)
+    base_ts = int(datetime.now(timezone.utc).timestamp() * 1000)
 
     for i, (q, a) in enumerate(raw_history):
         formatted.append({

@@ -13,6 +13,9 @@ from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from bs4 import BeautifulSoup
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 class ChurchMusicCrawler:
@@ -34,9 +37,6 @@ class ChurchMusicCrawler:
         
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
-        self.audio_dir = os.path.join(output_dir, "audio")
-        os.makedirs(self.audio_dir, exist_ok=True)
-        
         # Track visited URLs to avoid duplicates
         self.visited_urls: Set[str] = set()
         self.crawled_data: List[Dict] = []
@@ -62,7 +62,7 @@ class ChurchMusicCrawler:
                 parsed.netloc in self.allowed_domains and
                 not any(excluded in url.lower() for excluded in [
                     "login", "signin", "signup", "download",
-                    ".pdf", ".mp3", ".wav", ".midi"
+                    ".pdf"
                 ])
             )
         except Exception:
@@ -110,7 +110,7 @@ class ChurchMusicCrawler:
             "url": url,
             "title": title,
             "description": description,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         }
     
     def _extract_links(self, soup: BeautifulSoup, base_url: str) -> List[str]:
@@ -128,27 +128,7 @@ class ChurchMusicCrawler:
         
         return list(set(links))  # Remove duplicates
     
-    async def _download_audio(self, session: aiohttp.ClientSession, url: str):
-        """Download audio file found on page"""
-        try:
-            # Extract filename from URL path (ignoring query params)
-            path = urlparse(url).path
-            filename = os.path.basename(path)
-            
-            if not filename or not filename.lower().endswith('.mp3'):
-                return
-                
-            filepath = os.path.join(self.audio_dir, filename)
-            
-            if not os.path.exists(filepath):
-                async with session.get(url) as response:
-                    if response.status == 200:
-                        content = await response.read()
-                        with open(filepath, 'wb') as f:
-                            f.write(content)
-                        print(f"  [OK] Downloaded audio: {filename}")
-        except Exception as e:
-            print(f"  [X] Audio download failed: {e}")
+
 
     async def _crawl_page(
         self,
@@ -162,13 +142,13 @@ class ChurchMusicCrawler:
             return None
         
         if len(self.visited_urls) >= self.max_pages:
-            print(f"Reached max pages limit ({self.max_pages})")
+            logger.info("reached_max_pages_limit", max_pages=self.max_pages)
             return None
         
         self.visited_urls.add(url)
         
         try:
-            print(f"Crawling [{depth}]: {url}")
+            logger.info("crawling_page", depth=depth, url=url)
             
             # Rate limiting
             await asyncio.sleep(self.rate_limit_delay)
@@ -176,7 +156,7 @@ class ChurchMusicCrawler:
             # Fetch page
             async with session.get(url, headers=self.headers, timeout=30) as response:
                 if response.status != 200:
-                    print(f"  [X] Status {response.status}")
+                    logger.warning("fetch_failed", status=response.status, url=url)
                     return None
                 
                 html = await response.text()
@@ -184,21 +164,11 @@ class ChurchMusicCrawler:
             # Parse HTML
             soup = BeautifulSoup(html, "html.parser")
             
-            # Extract and download audio files
-            audio_links = []
-            for a in soup.find_all('a', href=True):
-                href = a['href']
-                if href.lower().endswith('.mp3'):
-                    audio_links.append(urljoin(url, href))
-            
-            for audio_url in set(audio_links):
-                await self._download_audio(session, audio_url)
-            
             # Extract content
             content = self._extract_text_content(soup)
             
             if not content or len(content) < 100:
-                print("  [X] Insufficient content")
+                logger.warning("insufficient_content", url=url)
                 return None
             
             # Extract metadata
@@ -211,7 +181,7 @@ class ChurchMusicCrawler:
                 "depth": depth
             }
             
-            print(f"  [OK] Extracted {len(content)} chars")
+            logger.info("extracted_content", chars=len(content), url=url)
             
             # Save document
             filename = f"doc_{len(self.crawled_data):04d}.json"
@@ -230,10 +200,10 @@ class ChurchMusicCrawler:
             return {"document": document, "links": []}
             
         except asyncio.TimeoutError:
-            print("  [X] Timeout")
+            logger.warning("fetch_timeout", url=url)
             return None
         except Exception as e:
-            print(f"  [X] Error: {e}")
+            logger.error("crawl_error", error=str(e), url=url, exc_info=True)
             return None
     
     async def crawl_sites(self, start_urls: List[str]) -> Dict:
@@ -242,10 +212,7 @@ class ChurchMusicCrawler:
         """
         start_time = time.time()
         
-        print(f"\n{'='*60}")
-        print(f"Starting crawl of {len(start_urls)} URLs")
-        print(f"Max depth: {self.max_depth}, Max pages: {self.max_pages}")
-        print(f"{'='*60}\n")
+        logger.info("starting_crawl", url_count=len(start_urls), max_depth=self.max_depth, max_pages=self.max_pages)
         
         async with aiohttp.ClientSession() as session:
             # Queue of URLs to crawl (url, depth)
@@ -268,19 +235,17 @@ class ChurchMusicCrawler:
         
         elapsed = time.time() - start_time
         
-        print(f"\n{'='*60}")
-        print("Crawl complete!")
-        print(f"  Documents: {len(self.crawled_data)}")
-        print(f"  Pages visited: {len(self.visited_urls)}")
-        print(f"  Time: {elapsed:.1f}s")
-        print(f"{'='*60}\n")
+        logger.info("crawl_complete", 
+                    documents=len(self.crawled_data), 
+                    pages_visited=len(self.visited_urls), 
+                    time_seconds=round(elapsed, 1))
         
         # Save summary
         summary = {
             "total_documents": len(self.crawled_data),
             "pages_visited": len(self.visited_urls),
             "elapsed_seconds": elapsed,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "start_urls": start_urls
         }
         

@@ -5,13 +5,8 @@ This logic used to be duplicated verbatim between /chat and /chat/stream in
 main.py. Pulling it out means the two endpoints can't drift apart, and the
 detection rules themselves become unit-testable without spinning up FastAPI.
 """
-import re
 from typing import Optional
 
-_SING_PATTERN = re.compile(r"\b(sing|play|listen|hear|music for|plat|plsy)\b\s*(.*)")
-_FILLER_WORDS = re.compile(r"\b(me|to|a|the|hymn|song|number)\b")
-
-AUDIO_INTENT_WORDS = ["play", "sing", "listen", "audio", "recording", "plat", "plsy"]
 INFORMATIONAL_WORDS = ["list", "about", "what is", "how many", "tell me", "explain"]
 RANDOM_REQUEST_WORDS = ["random", "something", "any song"]
 
@@ -25,28 +20,6 @@ HOW_ARE_YOU_PATTERNS = [
 ]
 
 
-def has_audio_intent(user_msg: str) -> bool:
-    """Does the message look like a request to hear/play a hymn?"""
-    return any(word in user_msg for word in AUDIO_INTENT_WORDS)
-
-
-def is_informational(user_msg: str) -> bool:
-    """Is the message asking *about* music rather than asking to play it?"""
-    return any(word in user_msg for word in INFORMATIONAL_WORDS)
-
-
-def extract_hymn_query(user_msg: str) -> str:
-    """Pull the hymn name/number out of a request like 'sing me hymn 2'."""
-    match = _SING_PATTERN.search(user_msg)
-    query = match.group(2).strip() if match else user_msg
-    return _FILLER_WORDS.sub("", query).strip()
-
-
-def resolve_hymn_query(user_msg: str) -> Optional[str]:
-    """Return the hymn search query if this message has audio intent, else None."""
-    if has_audio_intent(user_msg) and not is_informational(user_msg):
-        return extract_hymn_query(user_msg)
-    return None
 
 
 def is_explicit_random_request(query: str) -> bool:

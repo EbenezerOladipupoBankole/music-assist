@@ -111,7 +111,7 @@ async def trigger_crawl(
         return {
             "status": "success",
             "documents_crawled": results["total_documents"],
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     except Exception as e:

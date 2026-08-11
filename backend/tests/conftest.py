@@ -6,6 +6,9 @@ context-managed) `TestClient`, so the real `lifespan` - which needs a live
 OPENAI_API_KEY and talks to OpenAI/FAISS - never runs. Only `scope["type"] ==
 "http"` traffic is exercised, which doesn't depend on lifespan having fired,
 so the whole suite runs offline with no API key.
+
+Heavy dependencies faked out:
+  - RAGPipeline → FakeRAGPipeline (no OpenAI/FAISS calls)
 """
 import asyncio
 import json
@@ -17,16 +20,17 @@ from typing import Dict, List, Optional, Tuple
 # value before anything imports rag_pipeline so the whole suite runs offline.
 os.environ.setdefault("OPENAI_API_KEY", "sk-test-dummy-key-for-unit-tests")
 
+import sys
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
+
 import pytest
 from fastapi.testclient import TestClient
 
 from dependencies import (
-    get_audio_cache,
-    get_hymn_player,
     get_rag_pipeline,
     get_rag_pipeline_optional,
 )
-from hymn_player import HymnPlayer
 from main import app
 
 
@@ -92,11 +96,7 @@ class FakeRAGPipeline:
         return {"status": "healthy", "total_queries": 0}
 
 
-class FakeAudioCache:
-    """Always misses, forcing the direct-proxy fallback path in tests."""
 
-    def get_local_path(self, hymn_number: int, source_url: Optional[str]) -> Optional[str]:
-        return None
 
 
 @pytest.fixture
@@ -109,8 +109,6 @@ def client(fake_rag_pipeline):
     """A TestClient wired to the real routers with heavy dependencies faked out."""
     app.dependency_overrides[get_rag_pipeline] = lambda: fake_rag_pipeline
     app.dependency_overrides[get_rag_pipeline_optional] = lambda: fake_rag_pipeline
-    app.dependency_overrides[get_hymn_player] = lambda: HymnPlayer()
-    app.dependency_overrides[get_audio_cache] = lambda: FakeAudioCache()
 
     test_client = TestClient(app)
     try:
@@ -123,7 +121,6 @@ def client(fake_rag_pipeline):
 def client_no_rag():
     """A TestClient where the RAG pipeline is unavailable (init failed / still booting)."""
     app.dependency_overrides[get_rag_pipeline_optional] = lambda: None
-    app.dependency_overrides[get_hymn_player] = lambda: HymnPlayer()
 
     test_client = TestClient(app)
     try:

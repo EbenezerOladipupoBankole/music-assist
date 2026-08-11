@@ -6,7 +6,6 @@ This module wires the app together (lifespan, CORS, routers). Route logic
 lives in routers/, shared config in config.py, and cross-cutting services in
 services/ - see backend/README.md for the full module map.
 """
-import logging
 import os
 import sys
 from contextlib import asynccontextmanager
@@ -22,30 +21,22 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 load_dotenv()
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from logging_config import setup_logging
+import structlog
 
-from audio_manager import AudioCacheManager
+setup_logging()
+logger = structlog.get_logger(__name__)
+
 from config import settings
-from hymn_player import HymnPlayer
 from rag_pipeline import RAGPipeline
 from rate_limit import limiter
-from routers import admin, audio, chat, conversations, health
+from routers import admin, chat, conversations, health
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.audio_cache = None
     app.state.rag_pipeline = None
-    app.state.hymn_player = None
 
-    # 1. Init Local Audio Cache
-    try:
-        app.state.audio_cache = AudioCacheManager()
-    except Exception:
-        logger.error("AudioCache failed to initialize", exc_info=True)
-
-    # 2. Init RAG (SQLite Memory inside)
     try:
         rag_pipeline = RAGPipeline(
             vector_db_path=settings.vector_db_path,
@@ -56,13 +47,6 @@ async def lifespan(app: FastAPI):
         logger.info("[OK] RAG & Memory Ready")
     except Exception:
         logger.error("RAG initialization failed", exc_info=True)
-
-    # 3. Init Hymn Data
-    try:
-        app.state.hymn_player = HymnPlayer()
-        logger.info("[OK] HymnPlayer Ready")
-    except Exception:
-        logger.error("HymnPlayer failed to initialize", exc_info=True)
 
     yield
 
@@ -88,7 +72,6 @@ app.add_middleware(
 
 app.include_router(health.router)
 app.include_router(chat.router)
-app.include_router(audio.router)
 app.include_router(conversations.router)
 app.include_router(admin.router)
 

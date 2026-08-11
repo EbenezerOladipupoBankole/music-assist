@@ -1,8 +1,5 @@
 import html
 import json
-import re
-import shutil
-import subprocess
 import urllib.request
 
 # Configuration
@@ -52,20 +49,7 @@ def chat():
                         print(f"    - {title} ({ref})")
                     print()
 
-                # Check for MP3 link to play
-                mp3_match = re.search(r'(https?://[^\s"<>]+?\.mp3)', response_text)
-                if mp3_match:
-                    mp3_url = mp3_match.group(1)
-                    print("    [♪] Audio link detected. Attempting to play...")
-                    
-                    # Try to find a player
-                    if shutil.which("ffplay"):
-                        subprocess.run(["ffplay", "-nodisp", "-autoexit", mp3_url], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-                    elif shutil.which("mpv"):
-                        subprocess.run(["mpv", "--no-video", mp3_url], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-                    else:
-                        print("    [!] No terminal player found (install ffmpeg/ffplay or mpv).")
-                        print(f"    Link: {mp3_url}\n")
+
 
                 if "Vector store not initialized" in response_text:
                     print("    [!] Tip: The database is empty.")

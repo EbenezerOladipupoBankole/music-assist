@@ -11,13 +11,20 @@ class ChatMessage(BaseModel):
     user_name: Optional[str] = None
 
 
+class SourceItem(BaseModel):
+    """A single citation entry returned alongside a chat response."""
+    type: str  # 'local' | 'web'
+    title: str
+    source: Optional[str] = None   # local-source URL / identifier
+    url: Optional[str] = None      # web-source URL
+    relevance: Optional[float] = None  # web-source relevance score (0–1)
+
+
 class ChatResponse(BaseModel):
     response: str
-    sources: List[dict]
+    sources: List[SourceItem]
     conversation_id: str
     timestamp: str
-    audio_url: Optional[str] = None
-    audio_title: Optional[str] = None
     confidence: Optional[str] = None
     search_method: Optional[str] = None
 

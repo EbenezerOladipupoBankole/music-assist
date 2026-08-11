@@ -6,18 +6,18 @@ music-calling guidance), built with FastAPI, LangChain, OpenAI, and FAISS.
 ## Architecture
 
 ```
-main.py            FastAPI app: lifespan (wires up RAGPipeline/HymnPlayer/
-                    AudioCacheManager), CORS, router registration.
+main.py            FastAPI app: lifespan (wires up RAGPipeline/HymnPlayer),
+                    CORS, router registration.
 config.py           Centralized Settings (pydantic-settings) - every env var
                     the backend reads lives here.
 dependencies.py     FastAPI DI providers that pull the app.state singletons
                     back out for route handlers.
 interfaces.py       ConversationMemory Protocol shared by the SQLite and
                     Firestore memory backends.
-routers/            One module per resource: health, chat, audio,
+routers/            One module per resource: health, chat,
                     conversations, admin.
 services/intent.py  Regex-based canned-response detection (greetings, "how
-                    are you", hymn-audio requests) shared by /chat and
+                    are you") shared by /chat and
                     /chat/stream so they can't drift apart.
 rag_pipeline.py      Core RAG engine: FAISS retrieval + web-search fallback +
                     OpenAI generation + conversation-aware caching.
@@ -82,14 +82,13 @@ python -m uvicorn main:app --reload --port 8080
 | `GET /stats` | Query counts, cost tracking, success rate |
 | `POST /chat` | Single-shot chat response |
 | `POST /chat/stream` | NDJSON-streamed chat response |
-| `GET /audio/hymn/{number}` | Cached hymn audio, proxied from source on a cache miss |
 | `GET /conversations/{user_id}` | List a user's past conversations |
 | `GET /conversations/{conversation_id}/history` | Full message history for one conversation |
 | `POST /crawl/trigger` | Admin-only: re-crawl + rebuild the index (`admin_key` query param) |
 | `GET /debug/memory` | Admin-only: conversation-memory diagnostics |
 
 `/chat` and `/chat/stream` short-circuit to canned responses (see
-`services/intent.py`) for greetings, "how are you", and hymn-audio requests
+`services/intent.py`) for greetings and "how are you"
 before falling through to the full RAG pipeline for everything else.
 Off-topic (non-music) questions get a fixed redirect message rather than
 being sent to the LLM.
@@ -101,7 +100,7 @@ pytest              # full suite - runs offline, no OpenAI key needed
 ruff check .         # lint
 ```
 
-The suite (`tests/`) fakes out the RAG pipeline, hymn player, and audio cache
+The suite (`tests/`) fakes out the RAG pipeline and hymn player
 via FastAPI `dependency_overrides` (see `tests/conftest.py`), so it never
 makes a real OpenAI/Firestore call.
 

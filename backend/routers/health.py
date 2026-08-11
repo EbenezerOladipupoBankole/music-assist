@@ -1,5 +1,5 @@
 """Liveness/readiness/stats endpoints."""
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -16,7 +16,7 @@ async def root():
     """Liveness probe - always healthy once the process is up."""
     return HealthResponse(
         status="healthy",
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         version="1.0.0",
     )
 
@@ -33,7 +33,7 @@ async def health_check(
 
     return HealthResponse(
         status=status,
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(timezone.utc).isoformat(),
         version="1.0.0",
     )
 
@@ -46,7 +46,7 @@ async def get_stats(rag_pipeline: RAGPipeline = Depends(get_rag_pipeline)):
         return {
             "status": "success",
             "statistics": stats,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")

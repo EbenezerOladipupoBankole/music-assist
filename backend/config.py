@@ -54,8 +54,8 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 150
     max_conversation_history: int = 10
-    top_k_results: int = 5
-    fetch_k_results: int = 20
+    top_k_results: int = 3
+    fetch_k_results: int = 10
     mmr_lambda: float = 0.6
     min_content_length_for_local: int = 400
     min_doc_length_for_web: int = 600
